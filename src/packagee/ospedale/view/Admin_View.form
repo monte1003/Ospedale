@@ -34,7 +34,7 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="packagee.PanelRound" name="panel1">
+    <Container class="packagee.ospedale.view.PanelRound" name="panel1">
       <Properties>
         <Property name="radius" type="int" value="50"/>
       </Properties>
@@ -57,7 +57,7 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Container class="packagee.PanelRound" name="panel2">
+        <Container class="packagee.ospedale.view.PanelRound" name="panel2">
           <Properties>
             <Property name="radius" type="int" value="50"/>
           </Properties>
@@ -116,7 +116,7 @@
             </Component>
           </SubComponents>
         </Container>
-        <Container class="packagee.PanelRound" name="panel3">
+        <Container class="packagee.ospedale.view.PanelRound" name="panel3">
 
           <Layout>
             <DimensionLayout dim="0">

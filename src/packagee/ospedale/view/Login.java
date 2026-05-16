@@ -2,14 +2,23 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package packagee;
+package packagee.ospedale.view;
 
+import packagee.ospedale.view.Doctor_View;
+import packagee.ospedale.view.Admin_View;
+import packagee.ospedale.model.Hospitalization;
+import packagee.ospedale.model.Appointment;
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
+import packagee.ospedale.model.Administrator;
+import packagee.ospedale.model.User;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Color;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import javax.swing.UIManager;
+import packagee.ospedale.view.Patient_View;
 
 /**
  *
@@ -41,11 +50,11 @@ public class Login extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelRound1 = new packagee.PanelRound();
-        panelRound2 = new packagee.PanelRound();
+        panelRound1 = new packagee.ospedale.view.PanelRound();
+        panelRound2 = new packagee.ospedale.view.PanelRound();
         jButton1 = new javax.swing.JButton();
         view = new javax.swing.JTabbedPane();
-        login_view = new packagee.PanelRound();
+        login_view = new packagee.ospedale.view.PanelRound();
         login_label = new javax.swing.JLabel();
         username_login = new javax.swing.JTextField();
         username_login_label = new javax.swing.JLabel();
@@ -505,9 +514,9 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JTextField last_name_patient_register;
     private javax.swing.JLabel login_label;
-    private packagee.PanelRound login_view;
-    private packagee.PanelRound panelRound1;
-    private packagee.PanelRound panelRound2;
+    private packagee.ospedale.view.PanelRound login_view;
+    private packagee.ospedale.view.PanelRound panelRound1;
+    private packagee.ospedale.view.PanelRound panelRound2;
     private javax.swing.JTextField password_confirmation_patient_register;
     private javax.swing.JTextField password_login;
     private javax.swing.JLabel password_login_label;

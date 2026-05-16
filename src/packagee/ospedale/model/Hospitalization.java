@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package packagee;
+package packagee.ospedale.model;
 
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
 import java.time.LocalDate;
 
 /**
@@ -52,6 +54,30 @@ public class Hospitalization {
         this.roomType = roomType;
         this.observations = observations;
         this.status = hopsS;
+    }
+    
+    public Patient getPatient() { 
+        return patient; 
+    }
+    
+    public Doctor getDoctor() { 
+        return doctor; 
+    }
+    
+    public LocalDate getDate() { 
+        return date; 
+    }
+    
+    public String getReason() { 
+        return reason; 
+    }
+    
+    public RoomType getRoomType() { 
+        return roomType; 
+    }
+    
+    public HospitalizationStatus getStatus() { 
+        return status; 
     }
     
 }

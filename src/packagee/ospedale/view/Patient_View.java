@@ -2,8 +2,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package packagee;
+package packagee.ospedale.view;
 
+import packagee.ospedale.view.Login;
+import packagee.ospedale.view.Admin_View;
+import packagee.ospedale.model.RoomType;
+import packagee.ospedale.model.Specialty;
+import packagee.ospedale.model.AppointmentStatus;
+import packagee.ospedale.model.Hospitalization;
+import packagee.ospedale.model.Appointment;
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
+import packagee.ospedale.model.Administrator;
+import packagee.ospedale.model.User;
 import java.awt.Color;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,8 +61,8 @@ public class Patient_View extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelRound1 = new packagee.PanelRound();
-        panelRound2 = new packagee.PanelRound();
+        panelRound1 = new packagee.ospedale.view.PanelRound();
+        panelRound2 = new packagee.ospedale.view.PanelRound();
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jButton7 = new javax.swing.JButton();
@@ -885,7 +896,7 @@ public class Patient_View extends javax.swing.JFrame {
         long idDoctor = Long.parseLong(jComboBox2.getItemAt(jComboBox2.getSelectedIndex()));
         Doctor doc = null;
         for(User use: this.users){
-            if (use.id  == idDoctor ){
+            if (use.getId()  == idDoctor ){
                 doc = (Doctor) use;
             }
         }
@@ -966,8 +977,8 @@ public class Patient_View extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField8;
     private javax.swing.JTextField jTextField9;
     private javax.swing.JButton logout_button;
-    private packagee.PanelRound panelRound1;
-    private packagee.PanelRound panelRound2;
+    private packagee.ospedale.view.PanelRound panelRound1;
+    private packagee.ospedale.view.PanelRound panelRound2;
     private javax.swing.JButton refresh_button;
     private javax.swing.JTable table_patient_view;
     // End of variables declaration//GEN-END:variables

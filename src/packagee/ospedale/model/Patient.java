@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package packagee;
+package packagee.ospedale.model;
 
+import packagee.ospedale.model.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -51,6 +52,26 @@ public class Patient extends User {
     
     public void addAppointment(Appointment a) {
         this.appointments.add(a);
+    }
+    
+    public String getEmail() { 
+        return email; 
+    }
+    
+    public long getPhone() { 
+        return phone; 
+    }
+    
+    public String getAddress() { 
+        return address; 
+    }
+    
+    public LocalDate getBirthdate() { 
+        return birthdate; 
+    }
+    
+    public boolean isGender() { 
+        return gender; 
     }
 
     public Patient(long id, String username, String firstname, String lastname, String password, String email, LocalDate birthdate, boolean gender, long phone, String address) {

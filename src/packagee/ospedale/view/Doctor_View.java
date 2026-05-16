@@ -2,8 +2,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package packagee;
+package packagee.ospedale.view;
 
+import packagee.ospedale.view.Admin_View;
+import packagee.ospedale.model.RoomType;
+import packagee.ospedale.model.Specialty;
+import packagee.ospedale.model.HospitalizationStatus;
+import packagee.ospedale.model.AppointmentStatus;
+import packagee.ospedale.model.Prescription;
+import packagee.ospedale.model.Hospitalization;
+import packagee.ospedale.model.Appointment;
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
+import packagee.ospedale.model.Administrator;
+import packagee.ospedale.model.User;
 import java.awt.Color;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -48,8 +60,8 @@ public class Doctor_View extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel1 = new packagee.PanelRound();
-        panel2 = new packagee.PanelRound();
+        panel1 = new packagee.ospedale.view.PanelRound();
+        panel2 = new packagee.ospedale.view.PanelRound();
         x_button = new javax.swing.JButton();
         doctor_view_label = new javax.swing.JLabel();
         back_button = new javax.swing.JButton();
@@ -1373,8 +1385,8 @@ public class Doctor_View extends javax.swing.JFrame {
     private javax.swing.JLabel office_label;
     private javax.swing.JTabbedPane option_menu;
     private javax.swing.JScrollPane output1;
-    private packagee.PanelRound panel1;
-    private packagee.PanelRound panel2;
+    private packagee.ospedale.view.PanelRound panel1;
+    private packagee.ospedale.view.PanelRound panel2;
     private javax.swing.JTextField password_input;
     private javax.swing.JLabel password_label;
     private javax.swing.JRadioButton patient_id_button;

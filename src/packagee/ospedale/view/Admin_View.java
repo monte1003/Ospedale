@@ -2,10 +2,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package packagee;
+package packagee.ospedale.view;
 
+import packagee.ospedale.model.Specialty;
+import packagee.ospedale.model.Hospitalization;
+import packagee.ospedale.model.Appointment;
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
+import packagee.ospedale.model.User;
 import java.awt.Color;
 import java.util.ArrayList;
+import packagee.ospedale.view.Doctor_View;
 
 /**
  *
@@ -38,11 +45,11 @@ public class Admin_View extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panel1 = new packagee.PanelRound();
-        panel2 = new packagee.PanelRound();
+        panel1 = new packagee.ospedale.view.PanelRound();
+        panel2 = new packagee.ospedale.view.PanelRound();
         x_logout = new javax.swing.JButton();
         admin_view_label = new javax.swing.JLabel();
-        panel3 = new packagee.PanelRound();
+        panel3 = new packagee.ospedale.view.PanelRound();
         doctor_view_button = new javax.swing.JButton();
         patient_view_button = new javax.swing.JButton();
         firstname_label = new javax.swing.JLabel();
@@ -474,9 +481,9 @@ public class Admin_View extends javax.swing.JFrame {
     private javax.swing.JLabel license_numer_label;
     private javax.swing.JButton logout_button;
     private javax.swing.JLabel office_label;
-    private packagee.PanelRound panel1;
-    private packagee.PanelRound panel2;
-    private packagee.PanelRound panel3;
+    private packagee.ospedale.view.PanelRound panel1;
+    private packagee.ospedale.view.PanelRound panel2;
+    private packagee.ospedale.view.PanelRound panel3;
     private javax.swing.JTextField password_admin;
     private javax.swing.JTextField password_confirmation_admin;
     private javax.swing.JLabel password_label;
