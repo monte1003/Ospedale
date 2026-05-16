@@ -101,4 +101,8 @@ public class Appointment {
         return reason; 
     }
     
+    public void setDatetime(LocalDateTime datetime) {
+    this.datetime = datetime;
+}
+    
 }
