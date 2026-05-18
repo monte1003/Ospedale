@@ -2,8 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package packagee;
+package packagee.ospedale.model;
 
+import packagee.ospedale.model.Doctor;
+import packagee.ospedale.model.Patient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -94,5 +96,13 @@ public class Appointment {
     public boolean addPrescription(Prescription prescrip) {
         return this.prescriptions.add(prescrip);
     }
+    
+    public String getReason() { 
+        return reason; 
+    }
+    
+    public void setDatetime(LocalDateTime datetime) {
+    this.datetime = datetime;
+}
     
 }
