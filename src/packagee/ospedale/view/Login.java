@@ -4,21 +4,13 @@
  */
 package packagee.ospedale.view;
 
-import packagee.ospedale.view.Doctor_View;
-import packagee.ospedale.view.Admin_View;
-import packagee.ospedale.model.Hospitalization;
-import packagee.ospedale.model.Appointment;
-import packagee.ospedale.model.Doctor;
-import packagee.ospedale.model.Patient;
-import packagee.ospedale.model.Administrator;
-import packagee.ospedale.model.User;
+import packagee.ospedale.controller.PatientController;
+import packagee.ospedale.controller.utils.Response;
+import packagee.ospedale.controller.utils.Status;
 import com.formdev.flatlaf.FlatDarkLaf;
+import packagee.ospedale.controller.AuthController;
 import java.awt.Color;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.ArrayList;
-import javax.swing.UIManager;
-import packagee.ospedale.view.Patient_View;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -28,18 +20,12 @@ import packagee.ospedale.view.Patient_View;
 public class Login extends javax.swing.JFrame {
 
     private int x, y;
-    private ArrayList<User> users;
-    private ArrayList<Hospitalization> hospitalizations;
-    private ArrayList<Appointment> appointments;
 
     public Login() {
-        initComponents();
-        this.setBackground(new Color(0, 0, 0, 0));
-        this.setLocationRelativeTo(null);
-
-        this.users = new ArrayList<>();
-        this.users.add(new Administrator(0, "admin", "admin", "adnim", "admin123"));
-    }
+    initComponents();
+    this.setBackground(new Color(0, 0, 0, 0));
+    this.setLocationRelativeTo(null);
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -133,7 +119,7 @@ public class Login extends javax.swing.JFrame {
         login_label.setFont(new java.awt.Font("Yu Gothic UI", 1, 24)); // NOI18N
         login_label.setText("LOGIN");
 
-        username_login.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        username_login.setFont(new java.awt.Font("Yu Gothic UI", 0, 18));
         username_login.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         username_login_label.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
@@ -145,7 +131,7 @@ public class Login extends javax.swing.JFrame {
         password_login_label.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         password_login_label.setText("PASSWORD");
 
-        enter_login.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        enter_login.setFont(new java.awt.Font("Yu Gothic UI", 0, 18));
         enter_login.setText("ENTER");
         enter_login.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -194,7 +180,7 @@ public class Login extends javax.swing.JFrame {
                 .addComponent(password_login, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addComponent(enter_login)
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap(167, Short.MAX_VALUE))
         );
 
         view.addTab("Login", login_view);
@@ -423,49 +409,75 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void enter_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enter_loginActionPerformed
-        // TODO add your handling code here:
-        User selectedUser = null;
-        for (User user : this.users) {
-            if (username_login.getText().equals(user.getUsername())) {
-                selectedUser = user;
-                if (selectedUser.getPassword().equals(password_login.getText())) {
-                    if (selectedUser instanceof Administrator ) {
-                        Admin_View admin = new Admin_View(selectedUser,users,hospitalizations, appointments);
-                        this.setVisible(false);
-                        admin.setVisible(true);
-                    }
-                    else if (selectedUser instanceof Doctor ) {
-                        Doctor_View doctor = new Doctor_View(selectedUser,(Doctor)selectedUser,users,hospitalizations,appointments);
-                        this.setVisible(false);
-                        doctor.setVisible(true);
-                    }
-                    else {
-                        Patient_View patient = new Patient_View(selectedUser,(Patient) selectedUser,users,appointments, hospitalizations);
-                        this.setVisible(false);
-                        patient.setVisible(true);
-                    }
-                }
-            }
-        }
-
     }//GEN-LAST:event_enter_loginActionPerformed
 
-    private void save_patient_registerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_patient_registerActionPerformed
-        String firstname = firstname_patient_register.getText();
-        String lastname = last_name_patient_register.getText();
-        long id = Long.parseLong(id_patient_register.getText());
-        boolean gender = (jComboBox1.getSelectedIndex() == 0 ? null : (jComboBox1.getSelectedIndex() == 1 ));
-        String birth = birthdate_patient_register.getText();
-        String address = address_patient_register.getText();
-        long phone = Long.parseLong(phone_patient_register.getText());
-        String email = email_patient_register.getText();
-        String user = user_patient_register.getText();
-        String password = password_patient_register.getText();
-        String comPassword = password_confirmation_patient_register.getText();
-        LocalDate birthdate = LocalDate.of(Integer.parseInt(birth.substring(0, 4)), Integer.parseInt(birth.substring(5, 7)), Integer.parseInt(birth.substring(8)));
-        if (comPassword.equals(password)) {
-            users.add(new Patient(id, user, firstname, lastname, password, email, birthdate, gender, phone, address));
+    private void enter_loginActionPerformed(java.awt.event.ActionEvent evt) {
+    String username = username_login.getText();
+    String password = password_login.getText();
+
+    Response response = AuthController.login(username, password);
+
+    if (response.getStatus() >= 500) {
+        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+    } else if (response.getStatus() >= 400) {
+        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+    } else {
+        String role = (String) response.getData().get("role");
+        long id = (long) response.getData().get("id");
+
+        if (role.equals("admin")) {
+            Admin_View admin = new Admin_View();
+            this.setVisible(false);
+            admin.setVisible(true);
+        } else if (role.equals("doctor")) {
+            Doctor_View doctor = new Doctor_View(id);
+            this.setVisible(false);
+            doctor.setVisible(true);
+        } else {
+            Patient_View patient = new Patient_View(id);
+            this.setVisible(false);
+            patient.setVisible(true);
         }
+
+        username_login.setText("");
+        password_login.setText("");
+    }
+}
+    
+    private void save_patient_registerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_patient_registerActionPerformed
+        String id = id_patient_register.getText();
+    String username = user_patient_register.getText();
+    String password = password_patient_register.getText();
+    String confirmPassword = password_confirmation_patient_register.getText();
+    String firstname = firstname_patient_register.getText();
+    String lastname = last_name_patient_register.getText();
+    String email = email_patient_register.getText();
+    String birthdate = birthdate_patient_register.getText();
+    String gender = (String) jComboBox1.getSelectedItem();
+    String phone = phone_patient_register.getText();
+    String address = address_patient_register.getText();
+
+    Response response = PatientController.registerPatient(id, username, password,
+            confirmPassword, firstname, lastname, email, birthdate, gender, phone, address);
+
+    if (response.getStatus() >= 500) {
+        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+    } else if (response.getStatus() >= 400) {
+        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+    } else {
+        JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+        id_patient_register.setText("");
+        user_patient_register.setText("");
+        password_patient_register.setText("");
+        password_confirmation_patient_register.setText("");
+        firstname_patient_register.setText("");
+        last_name_patient_register.setText("");
+        email_patient_register.setText("");
+        birthdate_patient_register.setText("");
+        phone_patient_register.setText("");
+        address_patient_register.setText("");
+        jComboBox1.setSelectedIndex(0);
+    }
         
     }//GEN-LAST:event_save_patient_registerActionPerformed
 
@@ -473,24 +485,6 @@ public class Login extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_password_confirmation_patient_registerActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        System.setProperty("flatlaf.useNativeLibrary", "false");
-
-        try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (Exception ex) {
-            System.err.println("Failed to initialize LaF");
-        }
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Login().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField address_patient_register;
