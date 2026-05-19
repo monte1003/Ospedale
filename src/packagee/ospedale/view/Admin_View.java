@@ -481,13 +481,13 @@ private void loadPatientsComboBox() {
     }//GEN-LAST:event_logout_buttonActionPerformed
 
     private void patient_view_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patient_view_buttonActionPerformed
-        long idPatient = Long.parseLong(select_doctor.getItemAt(select_doctor.getSelectedIndex()));
-        Patient temp = null;
-        for(User use:this.users){
-            if(use.getId() == idPatient)
-                temp =(Patient) user;
+        String selectedId = (String) select_patient.getSelectedItem();
+        if (selectedId == null) {
+            JOptionPane.showMessageDialog(null, "Please select a patient", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-        Patient_View patient = new Patient_View(user,temp,users,appointments,hospitalizations);
+        long patientId = Long.parseLong(selectedId);
+        Patient_View patient = new Patient_View(patientId, true);
         this.setVisible(false);
         patient.setVisible(true);
     }//GEN-LAST:event_patient_view_buttonActionPerformed
