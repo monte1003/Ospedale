@@ -38,7 +38,7 @@ public class Login extends javax.swing.JFrame {
 
         panelRound1 = new packagee.ospedale.view.PanelRound();
         panelRound2 = new packagee.ospedale.view.PanelRound();
-        jButton1 = new javax.swing.JButton();
+        exit_button = new javax.swing.JButton();
         view = new javax.swing.JTabbedPane();
         login_view = new packagee.ospedale.view.PanelRound();
         login_label = new javax.swing.JLabel();
@@ -46,7 +46,7 @@ public class Login extends javax.swing.JFrame {
         username_login_label = new javax.swing.JLabel();
         password_login = new javax.swing.JTextField();
         password_login_label = new javax.swing.JLabel();
-        enter_login = new javax.swing.JButton();
+        enter_login1 = new javax.swing.JButton();
         patient_register_view = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         firstname_patient_register = new javax.swing.JTextField();
@@ -89,16 +89,16 @@ public class Login extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton1.setText("X");
-        jButton1.setBorderPainted(false);
-        jButton1.setContentAreaFilled(false);
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton1.setFocusable(false);
-        jButton1.setRequestFocusEnabled(false);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        exit_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        exit_button.setText("X");
+        exit_button.setBorderPainted(false);
+        exit_button.setContentAreaFilled(false);
+        exit_button.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        exit_button.setFocusable(false);
+        exit_button.setRequestFocusEnabled(false);
+        exit_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                exit_buttonActionPerformed(evt);
             }
         });
 
@@ -108,12 +108,12 @@ public class Login extends javax.swing.JFrame {
             panelRound2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRound2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addComponent(exit_button)
                 .addGap(19, 19, 19))
         );
         panelRound2Layout.setVerticalGroup(
             panelRound2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(exit_button, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         login_label.setFont(new java.awt.Font("Yu Gothic UI", 1, 24)); // NOI18N
@@ -131,11 +131,11 @@ public class Login extends javax.swing.JFrame {
         password_login_label.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         password_login_label.setText("PASSWORD");
 
-        enter_login.setFont(new java.awt.Font("Yu Gothic UI", 0, 18));
-        enter_login.setText("ENTER");
-        enter_login.addActionListener(new java.awt.event.ActionListener() {
+        enter_login1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18));
+        enter_login1.setText("ENTER");
+        enter_login1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                enter_loginActionPerformed(evt);
+                enter_login1ActionPerformed(evt);
             }
         });
 
@@ -162,8 +162,8 @@ public class Login extends javax.swing.JFrame {
                                 .addComponent(username_login, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(login_viewLayout.createSequentialGroup()
                         .addGap(471, 471, 471)
-                        .addComponent(enter_login)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(enter_login1)))
+                .addContainerGap(445, Short.MAX_VALUE))
         );
         login_viewLayout.setVerticalGroup(
             login_viewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -178,9 +178,9 @@ public class Login extends javax.swing.JFrame {
                 .addComponent(password_login_label)
                 .addGap(18, 18, 18)
                 .addComponent(password_login, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(31, 31, 31)
-                .addComponent(enter_login)
-                .addContainerGap(167, Short.MAX_VALUE))
+                .addGap(33, 33, 33)
+                .addComponent(enter_login1)
+                .addContainerGap(165, Short.MAX_VALUE))
         );
 
         view.addTab("Login", login_view);
@@ -404,80 +404,45 @@ public class Login extends javax.swing.JFrame {
         this.setLocation(this.getLocation().x + evt.getX() - x, this.getLocation().y + evt.getY() - y);
     }//GEN-LAST:event_panelRound2MouseDragged
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void exit_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exit_buttonActionPerformed
         System.exit(0);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_exit_buttonActionPerformed
 
-    private void enter_loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enter_loginActionPerformed
-    }//GEN-LAST:event_enter_loginActionPerformed
-
-    private void enter_loginActionPerformed(java.awt.event.ActionEvent evt) {
-    String username = username_login.getText();
-    String password = password_login.getText();
-
-    Response response = AuthController.login(username, password);
-
-    if (response.getStatus() >= 500) {
-        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
-    } else if (response.getStatus() >= 400) {
-        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
-    } else {
-        String role = (String) response.getData().get("role");
-        long id = (long) response.getData().get("id");
-
-        if (role.equals("admin")) {
-            Admin_View admin = new Admin_View();
-            this.setVisible(false);
-            admin.setVisible(true);
-        } else if (role.equals("doctor")) {
-            Doctor_View doctor = new Doctor_View(id);
-            this.setVisible(false);
-            doctor.setVisible(true);
-        } else {
-            Patient_View patient = new Patient_View(id);
-            this.setVisible(false);
-            patient.setVisible(true);
-        }
-
-        username_login.setText("");
-        password_login.setText("");
-    }
-}
     
     private void save_patient_registerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_patient_registerActionPerformed
         String id = id_patient_register.getText();
-    String username = user_patient_register.getText();
-    String password = password_patient_register.getText();
-    String confirmPassword = password_confirmation_patient_register.getText();
-    String firstname = firstname_patient_register.getText();
-    String lastname = last_name_patient_register.getText();
-    String email = email_patient_register.getText();
-    String birthdate = birthdate_patient_register.getText();
-    String gender = (String) jComboBox1.getSelectedItem();
-    String phone = phone_patient_register.getText();
-    String address = address_patient_register.getText();
+        String username = user_patient_register.getText();
+        String password = password_patient_register.getText();
+        String confirmPassword = password_confirmation_patient_register.getText();
+        String firstname = firstname_patient_register.getText();
+        String lastname = last_name_patient_register.getText();
+        String email = email_patient_register.getText();
+        String birthdate = birthdate_patient_register.getText();
+        String gender = (String) jComboBox1.getSelectedItem();
+        String phone = phone_patient_register.getText();
+        String address = address_patient_register.getText();
 
-    Response response = PatientController.registerPatient(id, username, password,
-            confirmPassword, firstname, lastname, email, birthdate, gender, phone, address);
+        Response response = PatientController.registerPatient(id, username, password,
+                confirmPassword, firstname, lastname, email, birthdate, gender, phone, address);
 
-    if (response.getStatus() >= 500) {
-        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
-    } else if (response.getStatus() >= 400) {
-        JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
-    } else {
-        JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
-        id_patient_register.setText("");
-        user_patient_register.setText("");
-        password_patient_register.setText("");
-        password_confirmation_patient_register.setText("");
-        firstname_patient_register.setText("");
-        last_name_patient_register.setText("");
-        email_patient_register.setText("");
-        birthdate_patient_register.setText("");
-        phone_patient_register.setText("");
-        address_patient_register.setText("");
-        jComboBox1.setSelectedIndex(0);
-    }
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            id_patient_register.setText("");
+            user_patient_register.setText("");
+            password_patient_register.setText("");
+            password_confirmation_patient_register.setText("");
+            firstname_patient_register.setText("");
+            last_name_patient_register.setText("");
+            email_patient_register.setText("");
+            birthdate_patient_register.setText("");
+            phone_patient_register.setText("");
+            address_patient_register.setText("");
+            jComboBox1.setSelectedIndex(0);
+        }
         
     }//GEN-LAST:event_save_patient_registerActionPerformed
 
@@ -485,15 +450,48 @@ public class Login extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_password_confirmation_patient_registerActionPerformed
 
+    private void enter_login1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enter_login1ActionPerformed
+        String username = username_login.getText();
+        String password = password_login.getText();
+
+        Response response = AuthController.login(username, password);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            String role = (String) response.getData().get("role");
+            long id = (long) response.getData().get("id");
+
+            if (role.equals("admin")) {
+                Admin_View admin = new Admin_View();
+                this.setVisible(false);
+                admin.setVisible(true);
+            } else if (role.equals("doctor")) {
+                Doctor_View doctor = new Doctor_View(id, false);
+                this.setVisible(false);
+                doctor.setVisible(true);
+            } else {
+                Patient_View patient = new Patient_View(id, false);
+                this.setVisible(false);
+                patient.setVisible(true);
+            }
+
+            username_login.setText("");
+            password_login.setText("");
+        }
+    }//GEN-LAST:event_enter_login1ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField address_patient_register;
     private javax.swing.JTextField birthdate_patient_register;
     private javax.swing.JTextField email_patient_register;
-    private javax.swing.JButton enter_login;
+    private javax.swing.JButton enter_login1;
+    private javax.swing.JButton exit_button;
     private javax.swing.JTextField firstname_patient_register;
     private javax.swing.JTextField id_patient_register;
-    private javax.swing.JButton jButton1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;

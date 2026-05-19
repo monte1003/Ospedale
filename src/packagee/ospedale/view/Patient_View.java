@@ -4,23 +4,16 @@
  */
 package packagee.ospedale.view;
 
-import packagee.ospedale.view.Login;
-import packagee.ospedale.view.Admin_View;
-import packagee.ospedale.model.RoomType;
-import packagee.ospedale.model.Specialty;
-import packagee.ospedale.model.AppointmentStatus;
-import packagee.ospedale.model.Hospitalization;
-import packagee.ospedale.model.Appointment;
-import packagee.ospedale.model.Doctor;
-import packagee.ospedale.model.Patient;
-import packagee.ospedale.model.Administrator;
-import packagee.ospedale.model.User;
+import packagee.ospedale.controller.DoctorController;
+import packagee.ospedale.controller.MedicalServiceController;
+import packagee.ospedale.controller.PatientController;
+import packagee.ospedale.controller.utils.Response;
+import packagee.ospedale.controller.utils.Status;
 import java.awt.Color;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import packagee.ospedale.model.Specialty;
 
 /**
  *
@@ -30,26 +23,88 @@ import javax.swing.table.DefaultTableModel;
 public class Patient_View extends javax.swing.JFrame {
 
     private int x, y;
-    private User user;
-    private ArrayList<User> users;
-    private Patient patient;
-    private ArrayList<Appointment> appointments;
-    private ArrayList<Hospitalization> hospitalizations;
+    private long patientId;
+    private boolean fromAdmin;
 
-    public Patient_View(User user,Patient patient, ArrayList<User> users, ArrayList<Appointment>appointments, ArrayList<Hospitalization> hospitalizations) {
+    public Patient_View(long patientId, boolean fromAdmin) {
         initComponents();
-        this.user = user;
-        this.users = users;
-        this.patient = patient;
-        this.hospitalizations = hospitalizations;
-        this.appointments = appointments;
-        if (user instanceof Administrator) {
-            jButton7.setVisible(true);
-        } else {
-            jButton7.setVisible(false);
-        }
+        this.patientId = patientId;
+        this.fromAdmin = fromAdmin;
         this.setBackground(new Color(0, 0, 0, 0));
         this.setLocationRelativeTo(null);
+        backButton.setVisible(fromAdmin);
+        loadPatientInfo();
+        loadAppointmentsTable();
+        loadDoctorsComboBox();
+        loadAppointmentsComboBox();
+        loadRoomTypesComboBox();
+    }
+    
+    private void loadPatientInfo() {
+        Response response = PatientController.getPatientInfo("" + patientId);
+        if (response.getStatus() == Status.OK) {
+            java.util.HashMap<String, Object> data = response.getData();
+            jTextField1.setText((String) data.get("firstname"));
+            jTextField2.setText((String) data.get("lastname"));
+            jTextField4.setText((String) data.get("birthdate"));
+            jTextField6.setText((String) data.get("email"));
+            jTextField7.setText("" + data.get("phone"));
+            jTextField8.setText((String) data.get("address"));
+            boolean gender = (boolean) data.get("gender");
+            jComboBox6.setSelectedItem(gender ? "Female" : "Male");
+        }
+    }
+    
+    private void loadAppointmentsTable() {
+        Response response = MedicalServiceController.getPatientAppointments("" + patientId);
+        if (response.getStatus() == Status.OK) {
+            ArrayList<java.util.HashMap<String, Object>> appointments =
+                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("appointments");
+            DefaultTableModel model = (DefaultTableModel) table_patient_view.getModel();
+            model.setRowCount(0);
+            for (java.util.HashMap<String, Object> a : appointments) {
+                model.addRow(new Object[]{
+                    a.get("id"),
+                    a.get("datetime"),
+                    a.get("doctorName"),
+                    a.get("specialty"),
+                    a.get("status")
+                });
+            }
+        }
+    }
+    
+    private void loadDoctorsComboBox() {
+        Response response = DoctorController.getAllDoctors();
+        if (response.getStatus() == Status.OK) {
+            jComboBox2.removeAllItems();
+            jComboBox5.removeAllItems();
+            ArrayList<java.util.HashMap<String, Object>> doctors =
+                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("doctors");
+            for (java.util.HashMap<String, Object> d : doctors) {
+                jComboBox2.addItem("" + d.get("id"));
+                jComboBox5.addItem("" + d.get("id"));
+            }
+        }
+    }
+    
+    private void loadAppointmentsComboBox() {
+        Response response = MedicalServiceController.getPatientAppointments("" + patientId);
+        if (response.getStatus() == Status.OK) {
+            jComboBox4.removeAllItems();
+            ArrayList<java.util.HashMap<String, Object>> appointments =
+                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("appointments");
+            for (java.util.HashMap<String, Object> a : appointments) {
+                jComboBox4.addItem((String) a.get("id"));
+            }
+        }
+    }
+    
+    private void loadRoomTypesComboBox() {
+        jComboBox3.removeAllItems();
+        for (packagee.ospedale.model.RoomType rt : packagee.ospedale.model.RoomType.values()) {
+            jComboBox3.addItem(rt.name());
+        }
     }
 
     /**
@@ -63,9 +118,9 @@ public class Patient_View extends javax.swing.JFrame {
 
         panelRound1 = new packagee.ospedale.view.PanelRound();
         panelRound2 = new packagee.ospedale.view.PanelRound();
-        jButton1 = new javax.swing.JButton();
+        exit_button = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
-        jButton7 = new javax.swing.JButton();
+        backButton = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -90,14 +145,14 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jTextField10 = new javax.swing.JTextField();
-        jButton9 = new javax.swing.JButton();
+        saveModifyInfoPatient = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         jTextField11 = new javax.swing.JTextField();
         jComboBox6 = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
-        jRadioButton3 = new javax.swing.JRadioButton();
-        jRadioButton4 = new javax.swing.JRadioButton();
+        selectSpecialty = new javax.swing.JRadioButton();
+        selectDoctor = new javax.swing.JRadioButton();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel14 = new javax.swing.JLabel();
         jTextField12 = new javax.swing.JTextField();
@@ -106,7 +161,7 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox<>();
-        jButton3 = new javax.swing.JButton();
+        createRequestMedicalAppointment = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
@@ -119,13 +174,13 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel23 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        jButton4 = new javax.swing.JButton();
+        createRequestHospitalization = new javax.swing.JButton();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-        jButton5 = new javax.swing.JButton();
+        cancelAppointment_button = new javax.swing.JButton();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTextArea3 = new javax.swing.JTextArea();
         jScrollPane5 = new javax.swing.JScrollPane();
@@ -150,27 +205,27 @@ public class Patient_View extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton1.setText("X");
-        jButton1.setBorderPainted(false);
-        jButton1.setContentAreaFilled(false);
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jButton1.setFocusable(false);
-        jButton1.setRequestFocusEnabled(false);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        exit_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        exit_button.setText("X");
+        exit_button.setBorderPainted(false);
+        exit_button.setContentAreaFilled(false);
+        exit_button.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        exit_button.setFocusable(false);
+        exit_button.setRequestFocusEnabled(false);
+        exit_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                exit_buttonActionPerformed(evt);
             }
         });
 
         jLabel1.setFont(new java.awt.Font("Yu Gothic UI", 0, 14)); // NOI18N
         jLabel1.setText("PATIENT VIEW");
 
-        jButton7.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton7.setText("Back");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
+        backButton.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        backButton.setText("Back");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
+                backButtonActionPerformed(evt);
             }
         });
 
@@ -182,19 +237,19 @@ public class Patient_View extends javax.swing.JFrame {
                 .addGap(15, 15, 15)
                 .addComponent(jLabel1)
                 .addGap(29, 29, 29)
-                .addComponent(jButton7)
+                .addComponent(backButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addComponent(exit_button)
                 .addGap(19, 19, 19))
         );
         panelRound2Layout.setVerticalGroup(
             panelRound2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelRound2Layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jButton1))
+                .addComponent(exit_button))
             .addGroup(panelRound2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton7)
+                .addComponent(backButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -316,11 +371,11 @@ public class Patient_View extends javax.swing.JFrame {
 
         jTextField10.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
 
-        jButton9.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton9.setText("Save");
-        jButton9.addActionListener(new java.awt.event.ActionListener() {
+        saveModifyInfoPatient.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        saveModifyInfoPatient.setText("Save");
+        saveModifyInfoPatient.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton9ActionPerformed(evt);
+                saveModifyInfoPatientActionPerformed(evt);
             }
         });
 
@@ -374,7 +429,7 @@ public class Patient_View extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(60, 60, 60)
-                        .addComponent(jButton9))
+                        .addComponent(saveModifyInfoPatient))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(39, 39, 39)
                         .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -427,7 +482,7 @@ public class Patient_View extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(36, 36, 36)
-                .addComponent(jButton9)
+                .addComponent(saveModifyInfoPatient)
                 .addContainerGap(68, Short.MAX_VALUE))
         );
 
@@ -436,19 +491,19 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel13.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jLabel13.setText("Request medical appointment");
 
-        jRadioButton3.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jRadioButton3.setText("Specialty");
-        jRadioButton3.addActionListener(new java.awt.event.ActionListener() {
+        selectSpecialty.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        selectSpecialty.setText("Specialty");
+        selectSpecialty.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton3ActionPerformed(evt);
+                selectSpecialtyActionPerformed(evt);
             }
         });
 
-        jRadioButton4.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jRadioButton4.setText("Doctor");
-        jRadioButton4.addActionListener(new java.awt.event.ActionListener() {
+        selectDoctor.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        selectDoctor.setText("Doctor");
+        selectDoctor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton4ActionPerformed(evt);
+                selectDoctorActionPerformed(evt);
             }
         });
 
@@ -473,11 +528,11 @@ public class Patient_View extends javax.swing.JFrame {
         jComboBox1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "Remote", "In-person" }));
 
-        jButton3.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton3.setText("Create");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        createRequestMedicalAppointment.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        createRequestMedicalAppointment.setText("Create");
+        createRequestMedicalAppointment.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                createRequestMedicalAppointmentActionPerformed(evt);
             }
         });
 
@@ -521,11 +576,11 @@ public class Patient_View extends javax.swing.JFrame {
         jTextArea1.setRows(5);
         jScrollPane1.setViewportView(jTextArea1);
 
-        jButton4.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton4.setText("Create");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        createRequestHospitalization.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        createRequestHospitalization.setText("Create");
+        createRequestHospitalization.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                createRequestHospitalizationActionPerformed(evt);
             }
         });
 
@@ -543,11 +598,11 @@ public class Patient_View extends javax.swing.JFrame {
         jTextArea2.setRows(5);
         jScrollPane2.setViewportView(jTextArea2);
 
-        jButton5.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton5.setText("Cancel");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
+        cancelAppointment_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        cancelAppointment_button.setText("Cancel");
+        cancelAppointment_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+                cancelAppointment_buttonActionPerformed(evt);
             }
         });
 
@@ -578,9 +633,9 @@ public class Patient_View extends javax.swing.JFrame {
                             .addGap(44, 44, 44)
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jRadioButton3)
+                                    .addComponent(selectSpecialty)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jRadioButton4))
+                                    .addComponent(selectDoctor))
                                 .addGroup(jPanel2Layout.createSequentialGroup()
                                     .addGap(63, 63, 63)
                                     .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -610,14 +665,14 @@ public class Patient_View extends javax.swing.JFrame {
                         .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(122, 122, 122)
-                        .addComponent(jButton3)))
+                        .addComponent(createRequestMedicalAppointment)))
                 .addGap(69, 69, 69)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel2Layout.createSequentialGroup()
                             .addGap(211, 211, 211)
-                            .addComponent(jButton4))
+                            .addComponent(createRequestHospitalization))
                         .addGroup(jPanel2Layout.createSequentialGroup()
                             .addGap(127, 127, 127)
                             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -653,7 +708,7 @@ public class Patient_View extends javax.swing.JFrame {
                                 .addComponent(jLabel24))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(77, 77, 77)
-                                .addComponent(jButton5))
+                                .addComponent(cancelAppointment_button))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(47, 47, 47)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -695,7 +750,7 @@ public class Patient_View extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton4)
+                        .addComponent(createRequestHospitalization)
                         .addGap(15, 15, 15))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -703,8 +758,8 @@ public class Patient_View extends javax.swing.JFrame {
                                 .addComponent(jLabel13)
                                 .addGap(18, 18, 18)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jRadioButton3)
-                                    .addComponent(jRadioButton4))
+                                    .addComponent(selectSpecialty)
+                                    .addComponent(selectDoctor))
                                 .addGap(18, 18, 18)
                                 .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -730,13 +785,13 @@ public class Patient_View extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(56, 56, 56)
-                                .addComponent(jButton5)))
+                                .addComponent(cancelAppointment_button)))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel16)
                         .addGap(18, 18, 18)
                         .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(40, 40, 40)
-                        .addComponent(jButton3)
+                        .addComponent(createRequestMedicalAppointment)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
 
@@ -774,55 +829,60 @@ public class Patient_View extends javax.swing.JFrame {
     private void panelRound2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelRound2MousePressed
         x = evt.getX();
         y = evt.getY();
+        
     }//GEN-LAST:event_panelRound2MousePressed
 
     private void panelRound2MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_panelRound2MouseDragged
         this.setLocation(this.getLocation().x + evt.getX() - x, this.getLocation().y + evt.getY() - y);
     }//GEN-LAST:event_panelRound2MouseDragged
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void exit_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exit_buttonActionPerformed
         System.exit(0);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_exit_buttonActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        String idAppointment = jComboBox4.getItemAt(jComboBox4.getSelectedIndex());
-        for(Appointment ap: this.appointments){
-            if (ap.getId().equals(idAppointment)) {
-                ap.setStatus(AppointmentStatus.CANCELED);
-            }
+    private void cancelAppointment_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelAppointment_buttonActionPerformed
+        String appointmentId = (String) jComboBox4.getSelectedItem();
+        if (appointmentId == null) {
+            JOptionPane.showMessageDialog(null, "Please select an appointment", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-    }//GEN-LAST:event_jButton5ActionPerformed
+        Response response = MedicalServiceController.cancelAppointment(appointmentId);
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jTextArea2.setText("");
+            loadAppointmentsTable();
+            loadAppointmentsComboBox();
+        }
+    }//GEN-LAST:event_cancelAppointment_buttonActionPerformed
 
-    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+    private void saveModifyInfoPatientActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveModifyInfoPatientActionPerformed
         String firstname = jTextField1.getText();
         String lastname = jTextField2.getText();
-        boolean gender = (jComboBox6.getSelectedIndex() == 0 ? null : (jComboBox6.getSelectedIndex() == 1));
-        String birth = jTextField4.getText();
-        String address = jTextField8.getText();
-        long phone = Long.parseLong(jTextField7.getText());
+        String birthdate = jTextField4.getText();
         String email = jTextField6.getText();
-        String username = jTextField11.getText();
+        String phone = jTextField7.getText();
+        String address = jTextField8.getText();
         String password = jTextField9.getText();
-        String comPassword = jTextField10.getText();
-        LocalDate birthdate = LocalDate.of(Integer.parseInt(birth.substring(0, 4)), Integer.parseInt(birth.substring(5, 7)), Integer.parseInt(birth.substring(8)));
-        if (comPassword.equals(password)) {
-            for (User user : this.users) {
-                if (user.getId() == this.user.getId() && user instanceof Patient) {
-                    Patient userTemp = (Patient) user;
-                    userTemp.setAddress(address);
-                    userTemp.setBirthdate(birthdate);
-                    userTemp.setEmail(email);
-                    userTemp.setFirstname(firstname);
-                    userTemp.setGender(gender);
-                    userTemp.setLastname(lastname);
-                    userTemp.setPassword(password);
-                    userTemp.setPhone(phone);
-                    userTemp.setUsername(username);
-                }
-            }
-        }
+        String confirmPassword = jTextField10.getText();
+        String username = jTextField11.getText();
+        String gender = (String) jComboBox6.getSelectedItem();
 
-    }//GEN-LAST:event_jButton9ActionPerformed
+        Response response = PatientController.updatePatient("" + patientId, username,
+                password, confirmPassword, firstname, lastname, email, birthdate,
+                gender, phone, address);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }//GEN-LAST:event_saveModifyInfoPatientActionPerformed
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
         Login login = new Login();
@@ -830,92 +890,99 @@ public class Patient_View extends javax.swing.JFrame {
         login.setVisible(true);
     }//GEN-LAST:event_logout_buttonActionPerformed
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        Admin_View admin = new Admin_View(user, users,hospitalizations, appointments);
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        Admin_View admin = new Admin_View();
         this.setVisible(false);
         admin.setVisible(true);
-    }//GEN-LAST:event_jButton7ActionPerformed
+    }//GEN-LAST:event_backButtonActionPerformed
 
-    private void jRadioButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton3ActionPerformed
-        if (jRadioButton4.isSelected()) {
-            jRadioButton4.setSelected(false);
+    private void selectSpecialtyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSpecialtyActionPerformed
+        if (selectDoctor.isSelected()) {
+            selectDoctor.setSelected(false);
         }
-
         jComboBox5.removeAllItems();
-
-        jComboBox5.addItem("Select one");
         for (Specialty spec : Specialty.values()) {
-            jComboBox5.addItem(spec.toString().replaceAll("_", " & "));
+            jComboBox5.addItem(spec.name());
         }
-    }//GEN-LAST:event_jRadioButton3ActionPerformed
+    }//GEN-LAST:event_selectSpecialtyActionPerformed
 
-    private void jRadioButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton4ActionPerformed
-        if (jRadioButton3.isSelected()) {
-            jRadioButton3.setSelected(false);
+    private void selectDoctorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectDoctorActionPerformed
+        if (selectSpecialty.isSelected()) {
+            selectSpecialty.setSelected(false);
         }
-        jComboBox5.removeAllItems();
+        loadDoctorsComboBox();
+    }//GEN-LAST:event_selectDoctorActionPerformed
 
-        jComboBox5.addItem("Select one");
-        for (User doc : this.users) {
-            if (doc instanceof Doctor) {
-                jComboBox5.addItem(doc.getFirstname() + " " + doc.getLastname());
-            }
-        }
-    }//GEN-LAST:event_jRadioButton4ActionPerformed
+    private void createRequestMedicalAppointmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRequestMedicalAppointmentActionPerformed
+        String date = jTextField12.getText();
+        String time = jTextField13.getText();
+        String reason = jTextArea4.getText();
+        String doctorOrSpecialty = (String) jComboBox5.getSelectedItem();
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        String appointDate = jTextField12.getText();
-        LocalDate appointmentDate = LocalDate.of(Integer.parseInt(appointDate.substring(0, 4)), Integer.parseInt(appointDate.substring(5, 7)), Integer.parseInt(appointDate.substring(8)));
-        LocalTime appointmentHour = LocalTime.of(Integer.parseInt(jTextField13.getText().substring(0, 2)), Integer.parseInt(jTextField13.getText().substring(3)));
-        LocalDateTime Finally = LocalDateTime.of(appointmentDate, appointmentHour);
-        String appointmentReason = jTextArea4.getText();
-        long docId = Long.parseLong(jComboBox5.getItemAt(jComboBox5.getSelectedIndex()));
-        Doctor doctor = null;
-        for(User use:this.users){
-            if (use.getId() == docId) {
-                doctor = (Doctor) use;
-            }
+        String doctorId = "";
+        String specialty = "";
+
+        if (selectDoctor.isSelected()) {
+            doctorId = doctorOrSpecialty;
+        } else {
+            specialty = doctorOrSpecialty;
         }
-        boolean appointmentType = (jComboBox1.getSelectedIndex() == 0 ? null : (jComboBox1.getSelectedIndex() == 2 ));
-        this.appointments.add(new Appointment(appointDate, patient, doctor, doctor.getSpecialty(), Finally, appointDate, appointmentType));
-    }//GEN-LAST:event_jButton3ActionPerformed
+
+        Response response = MedicalServiceController.requestAppointment(
+                "" + patientId, doctorId, specialty, date, time, reason);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jTextField12.setText("");
+            jTextField13.setText("");
+            jTextArea4.setText("");
+            loadAppointmentsTable();    
+            loadAppointmentsComboBox();
+        }
+    }//GEN-LAST:event_createRequestMedicalAppointmentActionPerformed
 
 
     private void refresh_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refresh_buttonActionPerformed
-        // TODO add your handling code here:
-        Patient p = (Patient) user;
-        DefaultTableModel model = (DefaultTableModel) table_patient_view.getModel();
-        model.setRowCount(0);
-        for (Appointment a : p.getAppointments()) {
-            model.addRow(new Object[]{a.getId(), a.getDatetime().toString(), a.getDoctor().getFirstname() + " " + a.getDoctor().getLastname(), a.getSpecialty().name(), a.isType() ? "In-person" : "Remote", a.getStatus().name()});
-        }
+
+        loadAppointmentsTable();
+        loadAppointmentsComboBox();
     }//GEN-LAST:event_refresh_buttonActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        String hospitalizationReason = jTextArea3.getText();
-        long idDoctor = Long.parseLong(jComboBox2.getItemAt(jComboBox2.getSelectedIndex()));
-        Doctor doc = null;
-        for(User use: this.users){
-            if (use.getId()  == idDoctor ){
-                doc = (Doctor) use;
-            }
-        }
-        LocalDate stimateDate = LocalDate.of(Integer.parseInt(jTextField16.getText().substring(0, 4)),Integer.parseInt(jTextField16.getText().substring(5, 7)), Integer.parseInt(jTextField16.getText().substring(8)));
-        
-        RoomType desireRoom = RoomType.valueOf(jComboBox3.getItemAt(jComboBox3.getSelectedIndex()).toUpperCase());
+    private void createRequestHospitalizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRequestHospitalizationActionPerformed
+        String reason = jTextArea3.getText();
+        String doctorId = (String) jComboBox2.getSelectedItem();
+        String date = jTextField16.getText();
+        String roomType = (String) jComboBox3.getSelectedItem();
         String observations = jTextArea1.getText();
-        this.hospitalizations.add(new Hospitalization(observations, this.patient, doc, stimateDate, observations, desireRoom, observations));
-    }//GEN-LAST:event_jButton4ActionPerformed
+
+        Response response = MedicalServiceController.requestHospitalization(
+                "" + patientId, doctorId, date, roomType, reason, observations);
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jTextArea3.setText("");
+            jTextField16.setText("");
+            jTextArea1.setText("");
+            jComboBox3.setSelectedIndex(0);
+        }
+    }//GEN-LAST:event_createRequestHospitalizationActionPerformed
 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton7;
-    private javax.swing.JButton jButton9;
+    private javax.swing.JButton backButton;
+    private javax.swing.JButton cancelAppointment_button;
+    private javax.swing.JButton createRequestHospitalization;
+    private javax.swing.JButton createRequestMedicalAppointment;
+    private javax.swing.JButton exit_button;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JComboBox<String> jComboBox3;
@@ -950,8 +1017,6 @@ public class Patient_View extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JRadioButton jRadioButton3;
-    private javax.swing.JRadioButton jRadioButton4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -980,6 +1045,9 @@ public class Patient_View extends javax.swing.JFrame {
     private packagee.ospedale.view.PanelRound panelRound1;
     private packagee.ospedale.view.PanelRound panelRound2;
     private javax.swing.JButton refresh_button;
+    private javax.swing.JButton saveModifyInfoPatient;
+    private javax.swing.JRadioButton selectDoctor;
+    private javax.swing.JRadioButton selectSpecialty;
     private javax.swing.JTable table_patient_view;
     // End of variables declaration//GEN-END:variables
 }

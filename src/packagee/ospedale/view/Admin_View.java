@@ -21,37 +21,37 @@ public class Admin_View extends javax.swing.JFrame {
 
     private int x, y;
 
-public Admin_View() {
-    initComponents();
-    this.setBackground(new Color(0, 0, 0, 0));
-    this.setLocationRelativeTo(null);
-    loadDoctorsComboBox();
-    loadPatientsComboBox();
-}
+    public Admin_View() {
+        initComponents();
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.setLocationRelativeTo(null);
+        loadDoctorsComboBox();
+        loadPatientsComboBox();
+    }
 
-private void loadDoctorsComboBox() {
-    Response response = DoctorController.getAllDoctors();
-    if (response.getStatus() == Status.OK) {
-        select_doctor.removeAllItems();
-        ArrayList<java.util.HashMap<String, Object>> doctors =
-                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("doctors");
-        for (java.util.HashMap<String, Object> d : doctors) {
-            select_doctor.addItem("" + d.get("id"));
+    private void loadDoctorsComboBox() {
+        Response response = DoctorController.getAllDoctors();
+        if (response.getStatus() == Status.OK) {
+            select_doctor.removeAllItems();
+            ArrayList<java.util.HashMap<String, Object>> doctors =
+                    (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("doctors");
+            for (java.util.HashMap<String, Object> d : doctors) {
+                select_doctor.addItem("" + d.get("id"));
+            }
         }
     }
-}
 
-private void loadPatientsComboBox() {
-    Response response = PatientController.getAllPatients();
-    if (response.getStatus() == Status.OK) {
-        select_patient.removeAllItems();
-        ArrayList<java.util.HashMap<String, Object>> patients =
-                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("patients");
-        for (java.util.HashMap<String, Object> p : patients) {
-            select_patient.addItem("" + p.get("id"));
+    private void loadPatientsComboBox() {
+        Response response = PatientController.getAllPatients();
+        if (response.getStatus() == Status.OK) {
+            select_patient.removeAllItems();
+            ArrayList<java.util.HashMap<String, Object>> patients =
+                    (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("patients");
+            for (java.util.HashMap<String, Object> p : patients) {
+                select_patient.addItem("" + p.get("id"));
+            }
         }
     }
-}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -87,7 +87,7 @@ private void loadPatientsComboBox() {
         confirmation_label = new javax.swing.JLabel();
         password_confirmation_admin = new javax.swing.JTextField();
         specialty = new javax.swing.JComboBox<>();
-        jButton9 = new javax.swing.JButton();
+        save_Admin_View = new javax.swing.JButton();
         separator = new javax.swing.JSeparator();
         select_doctor = new javax.swing.JComboBox<>();
         doctor_label = new javax.swing.JLabel();
@@ -209,11 +209,11 @@ private void loadPatientsComboBox() {
         specialty.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         specialty.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "General Medicine", "Cardiology", "Pediatrics", "Neurology", "Traumatology & Orthopedics", "Gynecology & Obstetrics", "Dermatology", "Psychiatry", "Oncology", "Ophthalmology", "Internal Medicine" }));
 
-        jButton9.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jButton9.setText("Save");
-        jButton9.addActionListener(new java.awt.event.ActionListener() {
+        save_Admin_View.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        save_Admin_View.setText("Save");
+        save_Admin_View.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton9ActionPerformed(evt);
+                save_Admin_ViewActionPerformed(evt);
             }
         });
 
@@ -249,7 +249,7 @@ private void loadPatientsComboBox() {
                 .addGroup(panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(panel3Layout.createSequentialGroup()
                         .addGap(326, 326, 326)
-                        .addComponent(jButton9)
+                        .addComponent(save_Admin_View)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(panel3Layout.createSequentialGroup()
                         .addGap(32, 32, 32)
@@ -372,7 +372,7 @@ private void loadPatientsComboBox() {
                         .addGap(43, 43, 43)
                         .addComponent(doctor_view_button)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
-                .addComponent(jButton9)
+                .addComponent(save_Admin_View)
                 .addGap(123, 123, 123)
                 .addComponent(logout_button)
                 .addGap(38, 38, 38))
@@ -433,7 +433,7 @@ private void loadPatientsComboBox() {
         System.exit(0);
     }//GEN-LAST:event_x_logoutActionPerformed
 
-    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+    private void save_Admin_ViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save_Admin_ViewActionPerformed
         String id_str = id.getText();
         String username = user_admin.getText();
         String password = password_admin.getText();
@@ -463,7 +463,7 @@ private void loadPatientsComboBox() {
             specialty.setSelectedIndex(0);
             loadDoctorsComboBox();
         }
-    }//GEN-LAST:event_jButton9ActionPerformed
+    }//GEN-LAST:event_save_Admin_ViewActionPerformed
 
     private void doctor_view_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doctor_view_buttonActionPerformed
         String selectedId = (String) select_doctor.getSelectedItem();
@@ -478,7 +478,6 @@ private void loadPatientsComboBox() {
     }//GEN-LAST:event_doctor_view_buttonActionPerformed
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
-        
         Login login = new Login();
         this.setVisible(false);
         login.setVisible(true);
@@ -507,7 +506,6 @@ private void loadPatientsComboBox() {
     private javax.swing.JLabel firstname_label;
     private javax.swing.JTextField id;
     private javax.swing.JLabel id_label;
-    private javax.swing.JButton jButton9;
     private javax.swing.JTextField last_name;
     private javax.swing.JLabel last_name_label;
     private javax.swing.JTextField license_number;
@@ -522,6 +520,7 @@ private void loadPatientsComboBox() {
     private javax.swing.JLabel password_label;
     private javax.swing.JLabel patient_label;
     private javax.swing.JButton patient_view_button;
+    private javax.swing.JButton save_Admin_View;
     private javax.swing.JComboBox<String> select_doctor;
     private javax.swing.JComboBox<String> select_patient;
     private javax.swing.JSeparator separator;
