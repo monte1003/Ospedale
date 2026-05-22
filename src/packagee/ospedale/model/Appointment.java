@@ -86,6 +86,10 @@ public class Appointment {
         return prescriptions.add(prescrip);
     }
 
+    public ArrayList<Prescription> getPrescriptions() {
+        return prescriptions;
+    }
+
     public String getReason() { 
         return reason; 
     }

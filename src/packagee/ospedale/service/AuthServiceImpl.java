@@ -5,17 +5,22 @@ import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
 import packagee.ospedale.model.User;
 import packagee.ospedale.model.storage.Storage;
+import packagee.ospedale.repository.PatientRepository;
 import packagee.ospedale.validator.UserValidator;
 
 /**
- * Contiene la logica de autenticacion del sistema.
+ * Implementacion del servicio de autenticacion.
  */
-public final class AuthService {
+public class AuthServiceImpl implements IAuthService {
 
-    private AuthService() {
+    private final PatientRepository patientRepository;
+
+    public AuthServiceImpl(PatientRepository patientRepository) {
+        this.patientRepository = patientRepository;
     }
 
-    public static Response login(String username, String password) {
+    @Override
+    public Response login(String username, String password) {
         try {
             Response validation = UserValidator.validateUsername(username);
             if (validation != null) {
@@ -26,8 +31,7 @@ public final class AuthService {
                 return new Response("Password must not be empty", Status.BAD_REQUEST);
             }
 
-            Storage storage = Storage.getInstance();
-            User user = storage.getUserByUsername(username.trim());
+            User user = patientRepository.getUserByUsername(username.trim());
 
             if (user == null) {
                 return new Response("User not found", Status.NOT_FOUND);
@@ -37,7 +41,7 @@ public final class AuthService {
                 return new Response("Invalid credentials", Status.BAD_REQUEST);
             }
 
-            HashMap<String, Object> data = storage.serializeUser(user);
+            HashMap<String, Object> data = Storage.getInstance().serializeUser(user);
             return new Response("Login successful", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);

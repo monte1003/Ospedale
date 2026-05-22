@@ -5,27 +5,46 @@ import java.util.HashMap;
 import java.util.List;
 import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
+import packagee.ospedale.model.Appointment;
+import packagee.ospedale.model.AppointmentStatus;
 import packagee.ospedale.model.Doctor;
 import packagee.ospedale.model.Hospitalization;
 import packagee.ospedale.model.HospitalizationStatus;
 import packagee.ospedale.model.Patient;
 import packagee.ospedale.model.RoomType;
-import packagee.ospedale.model.storage.Storage;
-import packagee.ospedale.observer.StorageEventType;
+import packagee.ospedale.repository.HospitalizationRepository;
+import packagee.ospedale.repository.PatientRepository;
+import packagee.ospedale.repository.DoctorRepository;
+import packagee.ospedale.repository.AppointmentRepository;
 import packagee.ospedale.validator.UserValidator;
 
 /**
- * Gestiona solicitudes y estados de hospitalizacion.
+ * Implementacion del servicio de hospitalizaciones.
  */
-public final class HospitalizationService {
+public class HospitalizationServiceImpl implements IHospitalizationService {
 
-    private HospitalizationService() {
+    private final HospitalizationRepository repository;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
+
+    public HospitalizationServiceImpl(
+            HospitalizationRepository repository,
+            PatientRepository patientRepository,
+            DoctorRepository doctorRepository,
+            AppointmentRepository appointmentRepository
+    ) {
+        this.repository = repository;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
-    public static Response requestHospitalization(String patientIdStr, String doctorIdStr,
+    @Override
+    public Response requestHospitalization(String patientIdStr, String doctorIdStr,
             String date, String roomType, String reason, String observations) {
         try {
-            Response validation = AppointmentService.validateDate(date);
+            Response validation = validateDate(date);
             if (validation != null) {
                 return validation;
             }
@@ -38,13 +57,12 @@ public final class HospitalizationService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Patient patient = storage.getPatientById(Long.parseLong(patientIdStr.trim()));
+            Patient patient = patientRepository.getPatientById(Long.parseLong(patientIdStr.trim()));
             if (patient == null) {
                 return new Response("Patient not found", Status.NOT_FOUND);
             }
 
-            Doctor doctor = storage.getDoctorById(Long.parseLong(doctorIdStr.trim()));
+            Doctor doctor = doctorRepository.getDoctorById(Long.parseLong(doctorIdStr.trim()));
             if (doctor == null) {
                 return new Response("Doctor not found", Status.NOT_FOUND);
             }
@@ -54,12 +72,11 @@ public final class HospitalizationService {
                 return new Response("Invalid room type", Status.BAD_REQUEST);
             }
 
-            String hospitalizationId = storage.generateHospitalizationId(patient.getId());
+            String hospitalizationId = repository.generateHospitalizationId(patient.getId());
             Hospitalization hospitalization = new Hospitalization(hospitalizationId, patient, doctor,
                     LocalDate.parse(date.trim()), reason == null ? "" : reason.trim(),
                     parsedRoomType, observations == null ? "" : observations.trim());
-            storage.addHospitalization(hospitalization);
-            storage.publishEvent(StorageEventType.HOSPITALIZATIONS_CHANGED);
+            repository.addHospitalization(hospitalization);
 
             HashMap<String, Object> data = new HashMap<>();
             data.put("hospitalizationId", hospitalizationId);
@@ -69,10 +86,10 @@ public final class HospitalizationService {
         }
     }
 
-    public static Response acceptHospitalization(String hospitalizationId) {
+    @Override
+    public Response acceptHospitalization(String hospitalizationId) {
         try {
-            Storage storage = Storage.getInstance();
-            Hospitalization hospitalization = storage.getHospitalizationById(hospitalizationId.trim());
+            Hospitalization hospitalization = repository.getHospitalizationById(hospitalizationId.trim());
 
             if (hospitalization == null) {
                 return new Response("Hospitalization not found", Status.NOT_FOUND);
@@ -83,17 +100,17 @@ public final class HospitalizationService {
             }
 
             hospitalization.setStatus(HospitalizationStatus.ONGOING);
-            storage.publishEvent(StorageEventType.HOSPITALIZATIONS_CHANGED);
+            repository.updateHospitalization(hospitalization);
             return new Response("Hospitalization approved", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response cancelHospitalization(String hospitalizationId) {
+    @Override
+    public Response cancelHospitalization(String hospitalizationId) {
         try {
-            Storage storage = Storage.getInstance();
-            Hospitalization hospitalization = storage.getHospitalizationById(hospitalizationId.trim());
+            Hospitalization hospitalization = repository.getHospitalizationById(hospitalizationId.trim());
 
             if (hospitalization == null) {
                 return new Response("Hospitalization not found", Status.NOT_FOUND);
@@ -104,28 +121,28 @@ public final class HospitalizationService {
             }
 
             hospitalization.setStatus(HospitalizationStatus.CANCELED);
-            storage.publishEvent(StorageEventType.HOSPITALIZATIONS_CHANGED);
+            repository.updateHospitalization(hospitalization);
             return new Response("Hospitalization denied", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response getPatientHospitalizations(String patientIdStr) {
+    @Override
+    public Response getPatientHospitalizations(String patientIdStr) {
         try {
             Response validation = UserValidator.validateUserId(patientIdStr);
             if (validation != null) {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
             long patientId = Long.parseLong(patientIdStr.trim());
 
-            if (storage.getPatientById(patientId) == null) {
+            if (patientRepository.getPatientById(patientId) == null) {
                 return new Response("Patient not found", Status.NOT_FOUND);
             }
 
-            List<HashMap<String, Object>> list = storage.getHospitalizationsByPatient(patientId);
+            List<HashMap<String, Object>> list = repository.getHospitalizationsByPatient(patientId);
             HashMap<String, Object> data = new HashMap<>();
             data.put("hospitalizations", list);
             return new Response("Hospitalizations retrieved", Status.OK, data);
@@ -134,25 +151,57 @@ public final class HospitalizationService {
         }
     }
 
-    public static Response getRequestedHospitalizations() {
+    @Override
+    public Response getRequestedHospitalizations() {
         try {
-            Storage storage = Storage.getInstance();
             HashMap<String, Object> data = new HashMap<>();
-            data.put("hospitalizations", storage.getRequestedHospitalizations());
+            data.put("hospitalizations", repository.getRequestedHospitalizations());
             return new Response("Hospitalization requests retrieved", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response hospitalizeFromAppointment(String appointmentId, String date,
+    @Override
+    public Response hospitalizeFromAppointment(String appointmentId, String date,
             String reason, String observations) {
-        return AppointmentService.hospitalizeFromAppointment(
-                appointmentId, date, reason, observations
-        );
+        try {
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
+
+            if (appointment == null) {
+                return new Response("Appointment not found", Status.NOT_FOUND);
+            }
+
+            if (appointment.getStatus() != AppointmentStatus.PENDING) {
+                return new Response("Appointment must be in PENDING status", Status.BAD_REQUEST);
+            }
+
+            appointment.setStatus(AppointmentStatus.COMPLETED);
+            appointmentRepository.updateAppointment(appointment);
+
+            String hospitalizationId = repository.generateHospitalizationId(appointment.getPatient().getId());
+            Hospitalization hospitalization = new Hospitalization(
+                    hospitalizationId,
+                    appointment.getPatient(),
+                    appointment.getDoctor(),
+                    LocalDate.parse(date.trim()),
+                    reason == null ? "" : reason.trim(),
+                    RoomType.STANDARD,
+                    observations == null ? "" : observations.trim(),
+                    HospitalizationStatus.ONGOING
+            );
+
+            repository.addHospitalization(hospitalization);
+
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("hospitalizationId", hospitalizationId);
+            return new Response("Patient hospitalized and appointment completed", Status.CREATED, data);
+        } catch (Exception ex) {
+            return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    private static RoomType parseRoomType(String roomType) {
+    private RoomType parseRoomType(String roomType) {
         if (roomType == null || roomType.trim().isEmpty() || "Select one".equalsIgnoreCase(roomType.trim())) {
             return null;
         }
@@ -161,6 +210,15 @@ public final class HospitalizationService {
             return RoomType.valueOf(roomType.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
             return null;
+        }
+    }
+
+    private Response validateDate(String date) {
+        try {
+            LocalDate.parse(date.trim());
+            return null;
+        } catch (Exception ex) {
+            return new Response("Date must follow format YYYY-MM-DD", Status.BAD_REQUEST);
         }
     }
 }

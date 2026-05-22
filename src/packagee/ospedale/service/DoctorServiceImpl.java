@@ -8,20 +8,23 @@ import packagee.ospedale.controller.utils.Status;
 import packagee.ospedale.model.Doctor;
 import packagee.ospedale.model.Specialty;
 import packagee.ospedale.model.User;
-import packagee.ospedale.model.storage.Storage;
-import packagee.ospedale.observer.StorageEventType;
+import packagee.ospedale.repository.DoctorRepository;
 import packagee.ospedale.validator.DoctorValidator;
 import packagee.ospedale.validator.UserValidator;
 
 /**
- * Gestiona el registro, consulta y actualizacion de doctores.
+ * Implementacion del servicio de doctores.
  */
-public final class DoctorService {
+public class DoctorServiceImpl implements IDoctorService {
 
-    private DoctorService() {
+    private final DoctorRepository repository;
+
+    public DoctorServiceImpl(DoctorRepository repository) {
+        this.repository = repository;
     }
 
-    public static Response registerDoctor(String id, String username, String password,
+    @Override
+    public Response registerDoctor(String id, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String licence, String office, String specialty) {
         try {
@@ -31,26 +34,23 @@ public final class DoctorService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
             long doctorId = Long.parseLong(id.trim());
 
-            if (storage.getDoctorById(doctorId) != null) {
+            if (repository.getDoctorById(doctorId) != null) {
                 return new Response("A doctor with that ID already exists", Status.BAD_REQUEST);
             }
 
-            if (storage.getUserByUsername(username.trim()) != null) {
+            if (repository.getUserByUsername(username.trim()) != null) {
                 return new Response("Username already taken", Status.BAD_REQUEST);
             }
 
-            Specialty parsedSpecialty = storage.getSpecialtyByName(specialty.trim());
+            Specialty parsedSpecialty = repository.getSpecialtyByName(specialty.trim());
             Doctor doctor = new Doctor(doctorId, username.trim(), firstname.trim(), lastname.trim(),
                     password, parsedSpecialty, licence.trim(), office.trim());
 
-            if (!storage.addUser(doctor)) {
+            if (!repository.addDoctor(doctor)) {
                 return new Response("A user with that ID already exists", Status.BAD_REQUEST);
             }
-
-            storage.publishEvent(StorageEventType.USERS_CHANGED);
 
             return new Response("Doctor registered successfully", Status.CREATED);
         } catch (Exception ex) {
@@ -58,7 +58,8 @@ public final class DoctorService {
         }
     }
 
-    public static Response updateDoctor(String idStr, String username, String password,
+    @Override
+    public Response updateDoctor(String idStr, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String licence, String office, String specialty) {
         try {
@@ -67,9 +68,8 @@ public final class DoctorService {
                 return idValidation;
             }
 
-            Storage storage = Storage.getInstance();
             long doctorId = Long.parseLong(idStr.trim());
-            Doctor doctor = storage.getDoctorById(doctorId);
+            Doctor doctor = repository.getDoctorById(doctorId);
 
             if (doctor == null) {
                 return new Response("Doctor not found", Status.NOT_FOUND);
@@ -81,12 +81,12 @@ public final class DoctorService {
                 return validation;
             }
 
-            User existing = storage.getUserByUsername(username.trim());
+            User existing = repository.getUserByUsername(username.trim());
             if (existing != null && existing.getId() != doctorId) {
                 return new Response("Username already taken", Status.BAD_REQUEST);
             }
 
-            Specialty parsedSpecialty = storage.getSpecialtyByName(specialty.trim());
+            Specialty parsedSpecialty = repository.getSpecialtyByName(specialty.trim());
             doctor.setUsername(username.trim());
             doctor.setPassword(password);
             doctor.setFirstname(firstname.trim());
@@ -94,7 +94,8 @@ public final class DoctorService {
             doctor.setLicenceNumber(licence.trim());
             doctor.setAssignedOffice(office.trim());
             doctor.setSpecialty(parsedSpecialty);
-            storage.publishEvent(StorageEventType.USERS_CHANGED);
+            
+            repository.updateDoctor(doctor);
 
             return new Response("Doctor updated successfully", Status.OK);
         } catch (Exception ex) {
@@ -102,46 +103,44 @@ public final class DoctorService {
         }
     }
 
-    public static Response getDoctorInfo(String idStr) {
+    @Override
+    public Response getDoctorInfo(String idStr) {
         try {
             Response idValidation = UserValidator.validateUserId(idStr);
             if (idValidation != null) {
                 return idValidation;
             }
 
-            Storage storage = Storage.getInstance();
-            Doctor doctor = storage.getDoctorById(Long.parseLong(idStr.trim()));
+            Doctor doctor = repository.getDoctorById(Long.parseLong(idStr.trim()));
 
             if (doctor == null) {
                 return new Response("Doctor not found", Status.NOT_FOUND);
             }
 
-            return new Response("Doctor found", Status.OK, storage.serializeDoctor(doctor));
+            return new Response("Doctor found", Status.OK, repository.serializeDoctor(doctor));
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response getAllDoctors() {
+    @Override
+    public Response getAllDoctors() {
         try {
-            Storage storage = Storage.getInstance();
-            List<HashMap<String, Object>> doctors = new ArrayList<>();
+            List<HashMap<String, Object>> doctorsList = new ArrayList<>();
 
-            for (User user : storage.getAllUsers()) {
-                if (user instanceof Doctor doctor) {
-                    doctors.add(storage.serializeDoctor(doctor));
-                }
+            for (Doctor doctor : repository.getAllDoctors()) {
+                doctorsList.add(repository.serializeDoctor(doctor));
             }
 
             HashMap<String, Object> data = new HashMap<>();
-            data.put("doctors", doctors);
+            data.put("doctors", doctorsList);
             return new Response("Doctors retrieved", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private static Response validateDoctorData(String id, String username, String password,
+    private Response validateDoctorData(String id, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String licence, String office, String specialty, boolean validateId) {
         Response validation;
@@ -178,8 +177,7 @@ public final class DoctorService {
             return new Response("Specialty must be selected", Status.BAD_REQUEST);
         }
 
-        Storage storage = Storage.getInstance();
-        if (storage.getSpecialtyByName(specialty.trim()) == null) {
+        if (repository.getSpecialtyByName(specialty.trim()) == null) {
             return new Response("Specialty not found", Status.NOT_FOUND);
         }
 

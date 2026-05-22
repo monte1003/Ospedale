@@ -1,32 +1,42 @@
 package packagee.ospedale.controller;
 
 import packagee.ospedale.controller.utils.Response;
-import packagee.ospedale.service.DoctorService;
+import packagee.ospedale.service.IDoctorService;
 
 /**
  * Coordina las operaciones relacionadas con doctores.
  */
-public class DoctorController {
+public class DoctorController implements IDoctorController {
 
-    public static Response registerDoctor(String id, String username, String password,
+    private final IDoctorService doctorService;
+
+    public DoctorController(IDoctorService doctorService) {
+        this.doctorService = doctorService;
+    }
+
+    @Override
+    public Response registerDoctor(String id, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String licence, String office, String specialty) {
-        return DoctorService.registerDoctor(id, username, password, confirmPassword,
+        return doctorService.registerDoctor(id, username, password, confirmPassword,
                 firstname, lastname, licence, office, specialty);
     }
 
-    public static Response updateDoctor(String idStr, String username, String password,
+    @Override
+    public Response updateDoctor(String idStr, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String licence, String office, String specialty) {
-        return DoctorService.updateDoctor(idStr, username, password, confirmPassword,
+        return doctorService.updateDoctor(idStr, username, password, confirmPassword,
                 firstname, lastname, licence, office, specialty);
     }
 
-    public static Response getDoctorInfo(String idStr) {
-        return DoctorService.getDoctorInfo(idStr);
+    @Override
+    public Response getDoctorInfo(String idStr) {
+        return doctorService.getDoctorInfo(idStr);
     }
 
-    public static Response getAllDoctors() {
-        return DoctorService.getAllDoctors();
+    @Override
+    public Response getAllDoctors() {
+        return doctorService.getAllDoctors();
     }
 }

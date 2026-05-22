@@ -16,6 +16,8 @@ public interface PatientRepository {
 
     boolean addUser(User user);
 
+    void updatePatient(Patient patient);
+
     HashMap<String, Object> serializePatient(Patient patient);
 
     List<User> getAllUsers();

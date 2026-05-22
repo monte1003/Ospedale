@@ -19,11 +19,8 @@
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/repository/AppointmentRepository.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/view/PanelRound.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/factory/PatientFactory.java</file>
-            <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/service/PatientService.java</file>
-            <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/service/HospitalizationService.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/validator/UserValidator.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/validator/DoctorValidator.java</file>
-            <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/service/AppointmentService.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/model/Administrator.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/observer/StorageEventType.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/observer/StorageObserver.java</file>
@@ -33,6 +30,7 @@
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/model/Specialty.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/model/RoomType.java</file>
             <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/model/Prescription.java</file>
+            <file>file:/C:/Users/isaac/OneDrive/Documents/UNINORTE/III%20SEMESTRE/POO/Ospedale/src/packagee/ospedale/service/IAuthService.java</file>
         </group>
     </open-files>
 </project-private>

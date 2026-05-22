@@ -8,25 +8,22 @@ import packagee.ospedale.controller.utils.Status;
 import packagee.ospedale.factory.PatientFactory;
 import packagee.ospedale.model.Patient;
 import packagee.ospedale.model.User;
-import packagee.ospedale.model.storage.Storage;
-import packagee.ospedale.observer.StorageEventType;
 import packagee.ospedale.repository.PatientRepository;
-import packagee.ospedale.repository.PatientRepositoryImpl;
 import packagee.ospedale.validator.PatientValidator;
 import packagee.ospedale.validator.UserValidator;
 
 /**
- * Gestiona las operaciones de negocio relacionadas con pacientes.
+ * Implementacion del servicio de pacientes.
  */
-public class PatientService {
+public class PatientServiceImpl implements IPatientService {
 
-    private static PatientRepository repository = new PatientRepositoryImpl();
+    private final PatientRepository repository;
 
-    public static void setRepository(PatientRepository repo) {
-        repository = repo;
+    public PatientServiceImpl(PatientRepository repository) {
+        this.repository = repository;
     }
 
-    private static Response validatePatientData(
+    private Response validatePatientData(
             String id,
             String username,
             String password,
@@ -39,7 +36,6 @@ public class PatientService {
     ) {
         Response validation;
 
-        // Se valida en un unico punto para reutilizar reglas tanto en registro como en edicion.
         if ((validation = UserValidator.validateUserId(id)) != null) {
             return validation;
         }
@@ -75,11 +71,12 @@ public class PatientService {
         return null;
     }
 
-    private static Response validateExistingPatientId(String idStr) {
+    private Response validateExistingPatientId(String idStr) {
         return UserValidator.validateUserId(idStr);
     }
 
-    public static Response registerPatient(String id, String username, String password,
+    @Override
+    public Response registerPatient(String id, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String email, String birthdate, String gender, String phone, String address) {
         try {
@@ -116,14 +113,14 @@ public class PatientService {
                 return new Response("A user with that ID already exists", Status.BAD_REQUEST);
             }
 
-            Storage.getInstance().publishEvent(StorageEventType.USERS_CHANGED);
             return new Response("Patient registered successfully", Status.CREATED);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response updatePatient(String idStr, String username, String password,
+    @Override
+    public Response updatePatient(String idStr, String username, String password,
             String confirmPassword, String firstname, String lastname,
             String email, String birthdate, String gender, String phone, String address) {
         try {
@@ -159,7 +156,8 @@ public class PatientService {
             patient.setGender(gender.equalsIgnoreCase("Male") || gender.equalsIgnoreCase("true"));
             patient.setPhone(Long.parseLong(phone.trim()));
             patient.setAddress(address.trim());
-            Storage.getInstance().publishEvent(StorageEventType.USERS_CHANGED);
+            
+            repository.updatePatient(patient);
 
             return new Response("Patient updated successfully", Status.OK);
         } catch (Exception ex) {
@@ -167,7 +165,8 @@ public class PatientService {
         }
     }
 
-    public static Response getPatientInfo(String idStr) {
+    @Override
+    public Response getPatientInfo(String idStr) {
         try {
             Response idValidation = validateExistingPatientId(idStr);
             if (idValidation != null) {
@@ -187,7 +186,8 @@ public class PatientService {
         }
     }
 
-    public static Response getAllPatients() {
+    @Override
+    public Response getAllPatients() {
         try {
             List<HashMap<String, Object>> list = new java.util.ArrayList<>();
 

@@ -1,72 +1,92 @@
 package packagee.ospedale.controller;
 
 import packagee.ospedale.controller.utils.Response;
-import packagee.ospedale.service.AppointmentService;
-import packagee.ospedale.service.HospitalizationService;
+import packagee.ospedale.service.IAppointmentService;
+import packagee.ospedale.service.IHospitalizationService;
 
 /**
  * Centraliza acciones medicas que afectan citas y hospitalizaciones.
  */
-public class MedicalServiceController {
+public class MedicalServiceController implements IMedicalServiceController {
 
-    public static Response requestAppointment(String patientIdStr, String doctorIdStr,
+    private final IAppointmentService appointmentService;
+    private final IHospitalizationService hospitalizationService;
+
+    public MedicalServiceController(IAppointmentService appointmentService, IHospitalizationService hospitalizationService) {
+        this.appointmentService = appointmentService;
+        this.hospitalizationService = hospitalizationService;
+    }
+
+    @Override
+    public Response requestAppointment(String patientIdStr, String doctorIdStr,
             String specialty, String date, String time, String reason) {
-        return AppointmentService.requestAppointment(patientIdStr, doctorIdStr, specialty,
+        return appointmentService.requestAppointment(patientIdStr, doctorIdStr, specialty,
                 date, time, reason, "In-person");
     }
 
-    public static Response requestAppointment(String patientIdStr, String doctorIdStr,
+    @Override
+    public Response requestAppointment(String patientIdStr, String doctorIdStr,
             String specialty, String date, String time, String reason, String appointmentType) {
-        return AppointmentService.requestAppointment(patientIdStr, doctorIdStr, specialty,
+        return appointmentService.requestAppointment(patientIdStr, doctorIdStr, specialty,
                 date, time, reason, appointmentType);
     }
 
-    public static Response acceptAppointment(String appointmentId) {
-        return AppointmentService.acceptAppointment(appointmentId);
+    @Override
+    public Response acceptAppointment(String appointmentId) {
+        return appointmentService.acceptAppointment(appointmentId);
     }
 
-    public static Response completeAppointment(String appointmentId) {
-        return AppointmentService.completeAppointment(appointmentId, "", "", "", "");
+    @Override
+    public Response completeAppointment(String appointmentId) {
+        return appointmentService.completeAppointment(appointmentId, "", "", "", "");
     }
 
-    public static Response completeAppointment(String appointmentId, String diagnosis,
+    @Override
+    public Response completeAppointment(String appointmentId, String diagnosis,
             String observations, String recommendedTreatment, String followUp) {
-        return AppointmentService.completeAppointment(appointmentId, diagnosis, observations,
+        return appointmentService.completeAppointment(appointmentId, diagnosis, observations,
                 recommendedTreatment, followUp);
     }
 
-    public static Response cancelAppointment(String appointmentId) {
-        return AppointmentService.cancelAppointment(appointmentId);
+    @Override
+    public Response cancelAppointment(String appointmentId) {
+        return appointmentService.cancelAppointment(appointmentId);
     }
 
-    public static Response rescheduleAppointment(String appointmentId, String newTime, String rescheduleReason) {
-        return AppointmentService.rescheduleAppointment(appointmentId, newTime, rescheduleReason);
+    @Override
+    public Response rescheduleAppointment(String appointmentId, String newTime, String rescheduleReason) {
+        return appointmentService.rescheduleAppointment(appointmentId, newTime, rescheduleReason);
     }
 
-    public static Response prescribeMedication(String appointmentId, String medicationName,
+    @Override
+    public Response prescribeMedication(String appointmentId, String medicationName,
             String dose, String administrationRoute, String treatmentDuration,
-            String additionalInstructions, String frecuency) {
-        return AppointmentService.prescribeMedication(appointmentId, medicationName, dose,
-                administrationRoute, treatmentDuration, additionalInstructions, frecuency);
+            String additionalInstructions, String frequency) {
+        return appointmentService.prescribeMedication(appointmentId, medicationName, dose,
+                administrationRoute, treatmentDuration, additionalInstructions, frequency);
     }
 
-    public static Response requestHospitalization(String patientIdStr, String doctorIdStr,
+    @Override
+    public Response requestHospitalization(String patientIdStr, String doctorIdStr,
             String date, String roomType, String reason, String observations) {
-        return HospitalizationService.requestHospitalization(patientIdStr, doctorIdStr,
+        return hospitalizationService.requestHospitalization(patientIdStr, doctorIdStr,
                 date, roomType, reason, observations);
     }
 
-    public static Response acceptHospitalization(String hospitalizationId) {
-        return HospitalizationService.acceptHospitalization(hospitalizationId);
+    @Override
+    public Response acceptHospitalization(String hospitalizationId) {
+        return hospitalizationService.acceptHospitalization(hospitalizationId);
     }
 
-    public static Response cancelHospitalization(String hospitalizationId) {
-        return HospitalizationService.cancelHospitalization(hospitalizationId);
+    @Override
+    public Response cancelHospitalization(String hospitalizationId) {
+        return hospitalizationService.cancelHospitalization(hospitalizationId);
     }
 
-    public static Response hospitalizeFromAppointment(String appointmentId, String date,
+    @Override
+    public Response hospitalizeFromAppointment(String appointmentId, String date,
             String reason, String observations) {
-        return HospitalizationService.hospitalizeFromAppointment(
+        return hospitalizationService.hospitalizeFromAppointment(
                 appointmentId,
                 date,
                 reason,
@@ -74,19 +94,23 @@ public class MedicalServiceController {
         );
     }
 
-    public static Response getPatientAppointments(String patientIdStr) {
-        return AppointmentService.getPatientAppointments(patientIdStr);
+    @Override
+    public Response getPatientAppointments(String patientIdStr) {
+        return appointmentService.getPatientAppointments(patientIdStr);
     }
 
-    public static Response getDoctorAppointments(String doctorIdStr, boolean pendingOnly) {
-        return AppointmentService.getDoctorAppointments(doctorIdStr, pendingOnly);
+    @Override
+    public Response getDoctorAppointments(String doctorIdStr, boolean pendingOnly) {
+        return appointmentService.getDoctorAppointments(doctorIdStr, pendingOnly);
     }
 
-    public static Response getPatientHospitalizations(String patientIdStr) {
-        return HospitalizationService.getPatientHospitalizations(patientIdStr);
+    @Override
+    public Response getPatientHospitalizations(String patientIdStr) {
+        return hospitalizationService.getPatientHospitalizations(patientIdStr);
     }
 
-    public static Response getRequestedHospitalizations() {
-        return HospitalizationService.getRequestedHospitalizations();
+    @Override
+    public Response getRequestedHospitalizations() {
+        return hospitalizationService.getRequestedHospitalizations();
     }
 }

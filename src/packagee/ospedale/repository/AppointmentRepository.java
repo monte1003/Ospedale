@@ -2,6 +2,7 @@ package packagee.ospedale.repository;
 
 import java.util.HashMap;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import packagee.ospedale.model.Appointment;
 import packagee.ospedale.model.Doctor;
@@ -17,6 +18,14 @@ public interface AppointmentRepository {
 
     Appointment getAppointmentById(String id);
     
+    void updateAppointment(Appointment appointment);
+    
+    boolean isDoctorAvailable(Doctor doctor, LocalDateTime datetime);
+    
+    boolean isDoctorAvailableExcluding(Doctor doctor, LocalDateTime datetime, String excludeAppointmentId);
+    
+    String generateAppointmentId(long patientId);
+    
     List<HashMap<String, Object>> getAllAppointments();
 
     Patient getPatientById(long id);
@@ -25,7 +34,7 @@ public interface AppointmentRepository {
 
     Doctor findAvailableDoctor(
             Specialty specialty,
-            java.time.LocalDateTime datetime
+            LocalDateTime datetime
     );
 
     List<HashMap<String, Object>> getAppointmentsByPatientSorted(long patientId);

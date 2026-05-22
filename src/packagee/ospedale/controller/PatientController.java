@@ -1,14 +1,21 @@
 package packagee.ospedale.controller;
 
 import packagee.ospedale.controller.utils.Response;
-import packagee.ospedale.service.PatientService;
+import packagee.ospedale.service.IPatientService;
 
 /**
  * Expone las operaciones de pacientes a la interfaz grafica.
  */
-public class PatientController {
+public class PatientController implements IPatientController {
 
-    public static Response registerPatient(
+    private final IPatientService patientService;
+
+    public PatientController(IPatientService patientService) {
+        this.patientService = patientService;
+    }
+
+    @Override
+    public Response registerPatient(
             String id,
             String username,
             String password,
@@ -21,7 +28,7 @@ public class PatientController {
             String phone,
             String address
     ) {
-        return PatientService.registerPatient(
+        return patientService.registerPatient(
                 id,
                 username,
                 password,
@@ -36,7 +43,8 @@ public class PatientController {
         );
     }
 
-    public static Response updatePatient(
+    @Override
+    public Response updatePatient(
             String idStr,
             String username,
             String password,
@@ -49,7 +57,7 @@ public class PatientController {
             String phone,
             String address
     ) {
-        return PatientService.updatePatient(
+        return patientService.updatePatient(
                 idStr,
                 username,
                 password,
@@ -64,11 +72,13 @@ public class PatientController {
         );
     }
 
-    public static Response getPatientInfo(String idStr) {
-        return PatientService.getPatientInfo(idStr);
+    @Override
+    public Response getPatientInfo(String idStr) {
+        return patientService.getPatientInfo(idStr);
     }
 
-    public static Response getAllPatients() {
-        return PatientService.getAllPatients();
+    @Override
+    public Response getAllPatients() {
+        return patientService.getAllPatients();
     }
 }

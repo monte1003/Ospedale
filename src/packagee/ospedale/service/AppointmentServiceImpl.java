@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+
 import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
 import packagee.ospedale.model.Appointment;
@@ -17,25 +18,40 @@ import packagee.ospedale.model.Patient;
 import packagee.ospedale.model.Prescription;
 import packagee.ospedale.model.RoomType;
 import packagee.ospedale.model.Specialty;
-import packagee.ospedale.model.storage.Storage;
-import packagee.ospedale.observer.StorageEventType;
 import packagee.ospedale.repository.AppointmentRepository;
-import packagee.ospedale.repository.AppointmentRepositoryImpl;
+import packagee.ospedale.repository.PatientRepository;
+import packagee.ospedale.repository.DoctorRepository;
+import packagee.ospedale.repository.HospitalizationRepository;
 import packagee.ospedale.validator.AppointmentValidator;
 import packagee.ospedale.validator.UserValidator;
 
 /**
- * Centraliza el ciclo de vida de las citas medicas.
+ * Implementacion concreta del servicio de citas medicas.
  */
-public class AppointmentService {
+public class AppointmentServiceImpl implements IAppointmentService {
 
-    private static AppointmentRepository repository = new AppointmentRepositoryImpl();
+    private final AppointmentRepository appointmentRepository;
+    private final PatientRepository patientRepository;
+    private final DoctorRepository doctorRepository;
+    private final HospitalizationRepository hospitalizationRepository;
 
-    private static Response validateAppointmentIdInput(String appointmentId) {
+    public AppointmentServiceImpl(
+            AppointmentRepository appointmentRepository,
+            PatientRepository patientRepository,
+            DoctorRepository doctorRepository,
+            HospitalizationRepository hospitalizationRepository
+    ) {
+        this.appointmentRepository = appointmentRepository;
+        this.patientRepository = patientRepository;
+        this.doctorRepository = doctorRepository;
+        this.hospitalizationRepository = hospitalizationRepository;
+    }
+
+    private Response validateAppointmentIdInput(String appointmentId) {
         return AppointmentValidator.validateId(appointmentId);
     }
 
-    private static Response validateAppointmentParticipants(String patientIdStr, String doctorIdStr) {
+    private Response validateAppointmentParticipants(String patientIdStr, String doctorIdStr) {
         Response validation = UserValidator.validateUserId(patientIdStr);
         if (validation != null) {
             return validation;
@@ -44,7 +60,7 @@ public class AppointmentService {
         return UserValidator.validateUserId(doctorIdStr);
     }
 
-    private static Response validatePrescriptionData(String medicationName, String dose,
+    private Response validatePrescriptionData(String medicationName, String dose,
             String administrationRoute, String treatmentDuration, String frequency) {
         if (medicationName == null || medicationName.trim().isEmpty()) {
             return new Response("Medication name must not be empty", Status.BAD_REQUEST);
@@ -81,7 +97,8 @@ public class AppointmentService {
         return null;
     }
 
-    public static Response requestAppointment(String patientIdStr, String doctorIdStr,
+    @Override
+    public Response requestAppointment(String patientIdStr, String doctorIdStr,
             String specialty, String date, String time, String reason, String appointmentType) {
         try {
             Response validation = validateDate(date);
@@ -109,9 +126,8 @@ public class AppointmentService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
             long patientId = Long.parseLong(patientIdStr.trim());
-            Patient patient = storage.getPatientById(patientId);
+            Patient patient = patientRepository.getPatientById(patientId);
             if (patient == null) {
                 return new Response("Patient not found", Status.NOT_FOUND);
             }
@@ -126,37 +142,35 @@ public class AppointmentService {
             Doctor assignedDoctor;
 
             if (byDoctor) {
-                assignedDoctor = storage.getDoctorById(Long.parseLong(doctorIdStr.trim()));
+                assignedDoctor = doctorRepository.getDoctorById(Long.parseLong(doctorIdStr.trim()));
                 if (assignedDoctor == null) {
                     return new Response("Doctor not found", Status.NOT_FOUND);
                 }
 
-                if (!storage.isDoctorAvailable(assignedDoctor, appointmentDateTime)) {
+                if (!appointmentRepository.isDoctorAvailable(assignedDoctor, appointmentDateTime)) {
                     return new Response("Doctor not available at that time", Status.BAD_REQUEST);
                 }
 
                 if (specialty != null && !specialty.trim().isEmpty()
-                        && storage.getSpecialtyByName(specialty.trim()) != assignedDoctor.getSpecialty()) {
+                        && doctorRepository.getSpecialtyByName(specialty.trim()) != assignedDoctor.getSpecialty()) {
                     return new Response("Appointment specialty must match the doctor's specialty", Status.BAD_REQUEST);
                 }
             } else {
-                // Si no se solicita un doctor puntual, se asigna uno disponible por especialidad.
-                Specialty parsedSpecialty = storage.getSpecialtyByName(specialty == null ? "" : specialty.trim());
+                Specialty parsedSpecialty = doctorRepository.getSpecialtyByName(specialty == null ? "" : specialty.trim());
                 if (parsedSpecialty == null) {
                     return new Response("Specialty not found", Status.NOT_FOUND);
                 }
 
-                assignedDoctor = storage.findAvailableDoctor(parsedSpecialty, appointmentDateTime);
+                assignedDoctor = appointmentRepository.findAvailableDoctor(parsedSpecialty, appointmentDateTime);
                 if (assignedDoctor == null) {
                     return new Response("No doctor available for that specialty and time", Status.BAD_REQUEST);
                 }
             }
 
-            String appointmentId = storage.generateAppointmentId(patientId);
+            String appointmentId = appointmentRepository.generateAppointmentId(patientId);
             Appointment appointment = new Appointment(appointmentId, patient, assignedDoctor,
                     assignedDoctor.getSpecialty(), appointmentDateTime, reason.trim(), isRemote);
-            storage.addAppointment(appointment);
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.addAppointment(appointment);
 
             HashMap<String, Object> data = new HashMap<>();
             data.put("appointmentId", appointmentId);
@@ -166,15 +180,15 @@ public class AppointmentService {
         }
     }
 
-    public static Response acceptAppointment(String appointmentId) {
+    @Override
+    public Response acceptAppointment(String appointmentId) {
         try {
             Response validation = validateAppointmentIdInput(appointmentId);
             if (validation != null) {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -185,14 +199,15 @@ public class AppointmentService {
             }
 
             appointment.setStatus(AppointmentStatus.PENDING);
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.updateAppointment(appointment);
             return new Response("Appointment accepted", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response completeAppointment(String appointmentId, String diagnosis,
+    @Override
+    public Response completeAppointment(String appointmentId, String diagnosis,
             String observations, String recommendedTreatment, String followUp) {
         try {
             Response validation = validateAppointmentIdInput(appointmentId);
@@ -200,8 +215,7 @@ public class AppointmentService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -216,22 +230,22 @@ public class AppointmentService {
             appointment.setRecommendedTreatment(recommendedTreatment == null ? "" : recommendedTreatment.trim());
             appointment.setFollowUp(followUp == null ? "" : followUp.trim());
             appointment.setStatus(AppointmentStatus.COMPLETED);
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.updateAppointment(appointment);
             return new Response("Appointment completed", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response cancelAppointment(String appointmentId) {
+    @Override
+    public Response cancelAppointment(String appointmentId) {
         try {
             Response validation = validateAppointmentIdInput(appointmentId);
             if (validation != null) {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -242,14 +256,15 @@ public class AppointmentService {
             }
 
             appointment.setStatus(AppointmentStatus.CANCELED);
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.updateAppointment(appointment);
             return new Response("Appointment canceled", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response rescheduleAppointment(String appointmentId, String newTime, String rescheduleReason) {
+    @Override
+    public Response rescheduleAppointment(String appointmentId, String newTime, String rescheduleReason) {
         try {
             Response validation = validateAppointmentIdInput(appointmentId);
             if (validation != null) {
@@ -261,8 +276,7 @@ public class AppointmentService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -278,7 +292,7 @@ public class AppointmentService {
                     LocalTime.parse(newTime.trim())
             );
 
-            if (!storage.isDoctorAvailableExcluding(appointment.getDoctor(), newDateTime, appointmentId.trim())) {
+            if (!appointmentRepository.isDoctorAvailableExcluding(appointment.getDoctor(), newDateTime, appointmentId.trim())) {
                 return new Response("Doctor not available at new time", Status.BAD_REQUEST);
             }
 
@@ -286,14 +300,15 @@ public class AppointmentService {
             String previousReason = appointment.getReason() == null ? "" : appointment.getReason();
             String extraReason = rescheduleReason == null ? "" : rescheduleReason.trim();
             appointment.setReason(previousReason + (extraReason.isEmpty() ? "" : " | Rescheduled: " + extraReason));
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.updateAppointment(appointment);
             return new Response("Appointment rescheduled", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response prescribeMedication(String appointmentId, String medicationName,
+    @Override
+    public Response prescribeMedication(String appointmentId, String medicationName,
             String dose, String administrationRoute, String treatmentDuration,
             String additionalInstructions, String frequency) {
         try {
@@ -313,8 +328,7 @@ public class AppointmentService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -333,14 +347,15 @@ public class AppointmentService {
                     additionalInstructions == null ? "" : additionalInstructions.trim(),
                     Integer.parseInt(frequency.trim())
             );
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
+            appointmentRepository.updateAppointment(appointment);
             return new Response("Medication prescribed", Status.OK);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response hospitalizeFromAppointment(String appointmentId, String date,
+    @Override
+    public Response hospitalizeFromAppointment(String appointmentId, String date,
             String reason, String observations) {
         try {
             Response validation = validateAppointmentIdInput(appointmentId);
@@ -353,8 +368,7 @@ public class AppointmentService {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
-            Appointment appointment = storage.getAppointmentById(appointmentId.trim());
+            Appointment appointment = appointmentRepository.getAppointmentById(appointmentId.trim());
 
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
@@ -365,8 +379,9 @@ public class AppointmentService {
             }
 
             appointment.setStatus(AppointmentStatus.COMPLETED);
+            appointmentRepository.updateAppointment(appointment);
 
-            String hospitalizationId = storage.generateHospitalizationId(appointment.getPatient().getId());
+            String hospitalizationId = hospitalizationRepository.generateHospitalizationId(appointment.getPatient().getId());
             Hospitalization hospitalization = new Hospitalization(
                     hospitalizationId,
                     appointment.getPatient(),
@@ -378,9 +393,7 @@ public class AppointmentService {
                     HospitalizationStatus.ONGOING
             );
 
-            storage.addHospitalization(hospitalization);
-            storage.publishEvent(StorageEventType.APPOINTMENTS_CHANGED);
-            storage.publishEvent(StorageEventType.HOSPITALIZATIONS_CHANGED);
+            hospitalizationRepository.addHospitalization(hospitalization);
 
             HashMap<String, Object> data = new HashMap<>();
             data.put("hospitalizationId", hospitalizationId);
@@ -390,81 +403,83 @@ public class AppointmentService {
         }
     }
 
-    public static Response getAppointmentInfo(String id) {
+    @Override
+    public Response getAppointmentInfo(String id) {
         try {
             Response validation = validateAppointmentIdInput(id);
             if (validation != null) {
                 return validation;
             }
 
-            Appointment appointment = repository.getAppointmentById(id);
+            Appointment appointment = appointmentRepository.getAppointmentById(id);
             if (appointment == null) {
                 return new Response("Appointment not found", Status.NOT_FOUND);
             }
 
             return new Response("Appointment found", Status.OK,
-                    repository.serializeAppointment(appointment));
+                    appointmentRepository.serializeAppointment(appointment));
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response getAllAppointments() {
+    @Override
+    public Response getAllAppointments() {
         try {
             HashMap<String, Object> data = new HashMap<>();
-            List<HashMap<String, Object>> appointments = repository.getAllAppointments();
-            data.put("appointments", appointments);
+            List<HashMap<String, Object>> appointmentsList = appointmentRepository.getAllAppointments();
+            data.put("appointments", appointmentsList);
             return new Response("Appointments retrieved", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response getPatientAppointments(String patientIdStr) {
+    @Override
+    public Response getPatientAppointments(String patientIdStr) {
         try {
             Response validation = UserValidator.validateUserId(patientIdStr);
             if (validation != null) {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
             long patientId = Long.parseLong(patientIdStr.trim());
 
-            if (storage.getPatientById(patientId) == null) {
+            if (patientRepository.getPatientById(patientId) == null) {
                 return new Response("Patient not found", Status.NOT_FOUND);
             }
 
             HashMap<String, Object> data = new HashMap<>();
-            data.put("appointments", storage.getAppointmentsByPatientSorted(patientId));
+            data.put("appointments", appointmentRepository.getAppointmentsByPatientSorted(patientId));
             return new Response("Appointments retrieved", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response getDoctorAppointments(String doctorIdStr, boolean pendingOnly) {
+    @Override
+    public Response getDoctorAppointments(String doctorIdStr, boolean pendingOnly) {
         try {
             Response validation = UserValidator.validateUserId(doctorIdStr);
             if (validation != null) {
                 return validation;
             }
 
-            Storage storage = Storage.getInstance();
             long doctorId = Long.parseLong(doctorIdStr.trim());
 
-            if (storage.getDoctorById(doctorId) == null) {
+            if (doctorRepository.getDoctorById(doctorId) == null) {
                 return new Response("Doctor not found", Status.NOT_FOUND);
             }
 
             HashMap<String, Object> data = new HashMap<>();
-            data.put("appointments", storage.getAppointmentsByDoctorSorted(doctorId, pendingOnly));
+            data.put("appointments", appointmentRepository.getAppointmentsByDoctorSorted(doctorId, pendingOnly));
             return new Response("Appointments retrieved", Status.OK, data);
         } catch (Exception ex) {
             return new Response("Unexpected error", Status.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public static Response validateDate(String date) {
+    public Response validateDate(String date) {
         try {
             LocalDate.parse(date.trim());
             return null;
@@ -473,7 +488,7 @@ public class AppointmentService {
         }
     }
 
-    public static Response validateTime(String time) {
+    public Response validateTime(String time) {
         if (time == null || !time.trim().matches("([01]\\d|2[0-3]):[0-5]\\d")) {
             return new Response("Time must follow 24h format hh:mm", Status.BAD_REQUEST);
         }

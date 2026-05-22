@@ -2,10 +2,10 @@ package packagee.ospedale.repository;
 
 import java.util.HashMap;
 import java.util.List;
-
 import packagee.ospedale.model.Patient;
 import packagee.ospedale.model.User;
 import packagee.ospedale.model.storage.Storage;
+import packagee.ospedale.observer.StorageEventType;
 
 /**
  * Implementacion del repositorio de pacientes usando el almacenamiento compartido.
@@ -30,7 +30,16 @@ public class PatientRepositoryImpl implements PatientRepository {
 
     @Override
     public boolean addUser(User user) {
-        return storage.addUser(user);
+        boolean result = storage.addUser(user);
+        if (result) {
+            storage.publishEvent(StorageEventType.USERS_CHANGED);
+        }
+        return result;
+    }
+
+    @Override
+    public void updatePatient(Patient patient) {
+        storage.publishEvent(StorageEventType.USERS_CHANGED);
     }
 
     @Override
