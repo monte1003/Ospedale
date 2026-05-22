@@ -9,17 +9,22 @@ import packagee.ospedale.controller.PatientController;
 import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import packagee.ospedale.model.storage.Storage;
+import packagee.ospedale.observer.StorageEventType;
+import packagee.ospedale.observer.StorageObserver;
 
 /**
- *
- * @author jjlora
- * @author edangulo
+ * Vista administrativa para registrar doctores y navegar entre perfiles.
  */
 public class Admin_View extends javax.swing.JFrame {
 
     private int x, y;
+    private StorageObserver storageObserver;
 
     public Admin_View() {
         initComponents();
@@ -27,6 +32,27 @@ public class Admin_View extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         loadDoctorsComboBox();
         loadPatientsComboBox();
+        registerObserver();
+    }
+
+    // Mantiene sincronizados los listados cuando cambia el almacenamiento compartido.
+    private void registerObserver() {
+        storageObserver = eventType -> {
+            if (eventType == StorageEventType.USERS_CHANGED) {
+                SwingUtilities.invokeLater(() -> {
+                    loadDoctorsComboBox();
+                    loadPatientsComboBox();
+                });
+            }
+        };
+
+        Storage.getInstance().addObserver(storageObserver);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                Storage.getInstance().removeObserver(storageObserver);
+            }
+        });
     }
 
     private void loadDoctorsComboBox() {
@@ -467,32 +493,32 @@ public class Admin_View extends javax.swing.JFrame {
 
     private void doctor_view_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doctor_view_buttonActionPerformed
         String selectedId = (String) select_doctor.getSelectedItem();
-        if (selectedId == null) {
+        if (selectedId == null || !selectedId.matches("\\d{12}")) {
             JOptionPane.showMessageDialog(null, "Please select a doctor", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
         long doctorId = Long.parseLong(selectedId);
         Doctor_View doctor = new Doctor_View(doctorId, true);
-        this.setVisible(false);
         doctor.setVisible(true);
+        dispose();
     }//GEN-LAST:event_doctor_view_buttonActionPerformed
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
         Login login = new Login();
-        this.setVisible(false);
         login.setVisible(true);
+        dispose();
     }//GEN-LAST:event_logout_buttonActionPerformed
 
     private void patient_view_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patient_view_buttonActionPerformed
         String selectedId = (String) select_patient.getSelectedItem();
-        if (selectedId == null) {
+        if (selectedId == null || !selectedId.matches("\\d{12}")) {
             JOptionPane.showMessageDialog(null, "Please select a patient", "Warning", JOptionPane.WARNING_MESSAGE);
             return;
         }
         long patientId = Long.parseLong(selectedId);
         Patient_View patient = new Patient_View(patientId, true);
-        this.setVisible(false);
         patient.setVisible(true);
+        dispose();
     }//GEN-LAST:event_patient_view_buttonActionPerformed
 
 

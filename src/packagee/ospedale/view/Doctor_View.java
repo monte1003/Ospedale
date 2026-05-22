@@ -10,20 +10,25 @@ import packagee.ospedale.controller.PatientController;
 import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import packagee.ospedale.model.storage.Storage;
+import packagee.ospedale.observer.StorageEventType;
+import packagee.ospedale.observer.StorageObserver;
 
 /**
- *
- * @author jjlora
- * @author edangulo
+ * Vista principal del doctor para gestionar citas y atencion clinica.
  */
 public class Doctor_View extends javax.swing.JFrame {
 
     private int x, y;
     private long doctorId;
     private boolean fromAdmin;
+    private StorageObserver storageObserver;
 
     public Doctor_View(long doctorId, boolean fromAdmin) {
         initComponents();
@@ -36,6 +41,35 @@ public class Doctor_View extends javax.swing.JFrame {
         loadAppointmentsComboBoxes();
         loadPatientsComboBox();
         loadHospitalizationsComboBox();
+        loadAppointmentsTable(false);
+        registerObserver();
+    }
+
+    // Refresca la vista solo cuando cambia la informacion relevante para el doctor.
+    private void registerObserver() {
+        storageObserver = eventType -> SwingUtilities.invokeLater(() -> {
+            if (eventType == StorageEventType.USERS_CHANGED) {
+                loadDoctorInfo();
+                loadPatientsComboBox();
+            }
+
+            if (eventType == StorageEventType.APPOINTMENTS_CHANGED) {
+                loadAppointmentsComboBoxes();
+                loadAppointmentsTable(pending_appointments_button.isSelected());
+            }
+
+            if (eventType == StorageEventType.HOSPITALIZATIONS_CHANGED) {
+                loadHospitalizationsComboBox();
+            }
+        });
+
+        Storage.getInstance().addObserver(storageObserver);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                Storage.getInstance().removeObserver(storageObserver);
+            }
+        });
     }
 
     private void loadDoctorInfo() {
@@ -46,8 +80,21 @@ public class Doctor_View extends javax.swing.JFrame {
             last_name_input.setText((String) data.get("lastname"));
             license_numer_input.setText((String) data.get("licenceNumber"));
             office_input.setText((String) data.get("assignedOffice"));
-            select_specialty.setSelectedItem(data.get("specialty"));
+            select_specialty.setSelectedItem(formatSpecialty((String) data.get("specialty")));
+            user_input.setText((String) data.get("username"));
+            password_input.setText((String) data.get("password"));
+            confirmation_input.setText((String) data.get("password"));
         }
+    }
+
+    private String formatSpecialty(String specialty) {
+        return switch (specialty) {
+            case "GENERAL_MEDICINE" -> "General Medicine";
+            case "TRAUMATOLOGY_ORTHOPEDICS" -> "Traumatology & Orthopedics";
+            case "GYNECOLOGY_OBSTETRICS" -> "Gynecology & Obstetrics";
+            case "INTERNAL_MEDICINE" -> "Internal Medicine";
+            default -> specialty.charAt(0) + specialty.substring(1).toLowerCase();
+        };
     }
 
     private void loadAppointmentsComboBoxes() {
@@ -73,16 +120,26 @@ public class Doctor_View extends javax.swing.JFrame {
         Response response = PatientController.getAllPatients();
         if (response.getStatus() == Status.OK) {
             select_patient.removeAllItems();
+            select_patient_id.removeAllItems();
             ArrayList<java.util.HashMap<String, Object>> patients =
                 (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("patients");
             for (java.util.HashMap<String, Object> p : patients) {
                 select_patient.addItem("" + p.get("id"));
+                select_patient_id.addItem("" + p.get("id"));
             }
         }
     }
 
     private void loadHospitalizationsComboBox() {
-        select_requests.removeAllItems();
+        Response response = MedicalServiceController.getRequestedHospitalizations();
+        if (response.getStatus() == Status.OK) {
+            select_requests.removeAllItems();
+            ArrayList<java.util.HashMap<String, Object>> hospitalizations =
+                (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("hospitalizations");
+            for (java.util.HashMap<String, Object> hospitalization : hospitalizations) {
+                select_requests.addItem((String) hospitalization.get("id"));
+            }
+        }
     }
 
     private void loadAppointmentsTable(boolean pendingOnly) {
@@ -98,6 +155,7 @@ public class Doctor_View extends javax.swing.JFrame {
                     a.get("datetime"),
                     a.get("patientName"),
                     a.get("specialty"),
+                    a.get("type"),
                     a.get("status")
                 });
             }
@@ -126,7 +184,7 @@ public class Doctor_View extends javax.swing.JFrame {
         patient_label = new javax.swing.JLabel();
         table_option2 = new javax.swing.JScrollPane();
         jTable3 = new javax.swing.JTable();
-        search_button = new javax.swing.JButton();
+        search_patient_button = new javax.swing.JButton();
         modify_info = new javax.swing.JPanel();
         firstname_label = new javax.swing.JLabel();
         fist_name_input = new javax.swing.JTextField();
@@ -150,7 +208,7 @@ public class Doctor_View extends javax.swing.JFrame {
         accept_medical_label = new javax.swing.JLabel();
         select_appointment = new javax.swing.JComboBox<>();
         separator1 = new javax.swing.JSeparator();
-        accept_label = new javax.swing.JButton();
+        accept_medical_appointment_button = new javax.swing.JButton();
         reschedule_label = new javax.swing.JLabel();
         appointment_label2 = new javax.swing.JLabel();
         select_appointment_2 = new javax.swing.JComboBox<>();
@@ -374,11 +432,11 @@ public class Doctor_View extends javax.swing.JFrame {
         });
         table_option2.setViewportView(jTable3);
 
-        search_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        search_button.setText("Search");
-        search_button.addActionListener(new java.awt.event.ActionListener() {
+        search_patient_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        search_patient_button.setText("Search");
+        search_patient_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                search_buttonActionPerformed(evt);
+                search_patient_buttonActionPerformed(evt);
             }
         });
 
@@ -399,7 +457,7 @@ public class Doctor_View extends javax.swing.JFrame {
                 .addContainerGap(99, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, history_patientLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(search_button)
+                .addComponent(search_patient_button)
                 .addGap(601, 601, 601))
         );
         history_patientLayout.setVerticalGroup(
@@ -412,7 +470,7 @@ public class Doctor_View extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(table_option2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(44, 44, 44)
-                .addComponent(search_button)
+                .addComponent(search_patient_button)
                 .addContainerGap(67, Short.MAX_VALUE))
         );
 
@@ -564,11 +622,11 @@ public class Doctor_View extends javax.swing.JFrame {
 
         separator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        accept_label.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        accept_label.setText("Accept");
-        accept_label.addActionListener(new java.awt.event.ActionListener() {
+        accept_medical_appointment_button.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        accept_medical_appointment_button.setText("Accept");
+        accept_medical_appointment_button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                accept_labelActionPerformed(evt);
+                accept_medical_appointment_buttonActionPerformed(evt);
             }
         });
 
@@ -747,7 +805,7 @@ public class Doctor_View extends javax.swing.JFrame {
                                 .addGap(26, 26, 26)
                                 .addGroup(requestLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, requestLayout.createSequentialGroup()
-                                        .addComponent(accept_label)
+                                        .addComponent(accept_medical_appointment_button)
                                         .addGap(87, 87, 87))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, requestLayout.createSequentialGroup()
                                         .addComponent(select_appointment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -925,7 +983,7 @@ public class Doctor_View extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(select_appointment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(31, 31, 31)
-                                .addComponent(accept_label))
+                                .addComponent(accept_medical_appointment_button))
                             .addGroup(requestLayout.createSequentialGroup()
                                 .addGap(19, 19, 19)
                                 .addComponent(reschedule_label)
@@ -1215,22 +1273,18 @@ public class Doctor_View extends javax.swing.JFrame {
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
         Login login = new Login();
-        this.setVisible(false);
         login.setVisible(true);
+        dispose();
     }//GEN-LAST:event_logout_buttonActionPerformed
 
     private void back_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_back_buttonActionPerformed
         Admin_View admin = new Admin_View();
-        this.setVisible(false);
         admin.setVisible(true);
+        dispose();
     }//GEN-LAST:event_back_buttonActionPerformed
 
     private void cancel_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancel_buttonActionPerformed
         String hospitalizationId = (String) select_requests.getSelectedItem();
-        if (hospitalizationId == null) {
-            JOptionPane.showMessageDialog(null, "Please select a hospitalization", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
         Response response = MedicalServiceController.cancelHospitalization(hospitalizationId);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -1243,10 +1297,6 @@ public class Doctor_View extends javax.swing.JFrame {
 
     private void generate_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generate_buttonActionPerformed
         String hospitalizationId = (String) select_requests.getSelectedItem();
-        if (hospitalizationId == null) {
-            JOptionPane.showMessageDialog(null, "Please select a hospitalization", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
         Response response = MedicalServiceController.acceptHospitalization(hospitalizationId);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -1257,12 +1307,8 @@ public class Doctor_View extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_generate_buttonActionPerformed
 
-    private void search_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_search_buttonActionPerformed
+    private void search_patient_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_search_patient_buttonActionPerformed
         String patientId = (String) select_patient.getSelectedItem();
-        if (patientId == null) {
-            JOptionPane.showMessageDialog(null, "Please select a patient", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
         Response response = MedicalServiceController.getPatientAppointments(patientId);
         if (response.getStatus() == Status.OK) {
             ArrayList<java.util.HashMap<String, Object>> appointments =
@@ -1275,46 +1321,24 @@ public class Doctor_View extends javax.swing.JFrame {
                     a.get("datetime"),
                     a.get("doctorName"),
                     a.get("specialty"),
+                    a.get("type"),
                     a.get("status")
                 });
             }
         } else {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
         }
-    }//GEN-LAST:event_search_buttonActionPerformed
+    }//GEN-LAST:event_search_patient_buttonActionPerformed
 
     private void total_appointments_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_total_appointments_buttonActionPerformed
         pending_appointments_button.setSelected(false);
         loadAppointmentsTable(false);
     }//GEN-LAST:event_total_appointments_buttonActionPerformed
 
-    private void accept_labelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accept_labelActionPerformed
-        String appointmentId = (String) select_appointment_2.getSelectedItem();
-        String newTime = new_time_appointment_label.getText();
-        String reason = reason_appointment_input.getText();
+    private void accept_medical_appointment_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accept_medical_appointment_buttonActionPerformed
+        String appointmentId = (String) select_appointment.getSelectedItem();
+        Response response = MedicalServiceController.acceptAppointment(appointmentId);
 
-        Response response = MedicalServiceController.rescheduleAppointment(appointmentId, newTime, reason);
-
-        if (response.getStatus() >= 500) {
-            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
-        } else if (response.getStatus() >= 400) {
-            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
-            new_time_appointment_label.setText("");
-            reason_appointment_input.setText("");
-            loadAppointmentsComboBoxes();
-            loadAppointmentsTable(false);   
-        }
-    }//GEN-LAST:event_accept_labelActionPerformed
-
-    private void complete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_complete_buttonActionPerformed
-        String appointmentId = (String) select_appointment_complete_medical.getSelectedItem();
-        if (appointmentId == null) {
-            JOptionPane.showMessageDialog(null, "Please select an appointment", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        Response response = MedicalServiceController.completeAppointment(appointmentId);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
         } else if (response.getStatus() >= 400) {
@@ -1324,24 +1348,62 @@ public class Doctor_View extends javax.swing.JFrame {
             loadAppointmentsComboBoxes();
             loadAppointmentsTable(false);
         }
+    }//GEN-LAST:event_accept_medical_appointment_buttonActionPerformed
+
+    private void complete_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_complete_buttonActionPerformed
+        String appointmentId = (String) select_appointment_complete_medical.getSelectedItem();
+        String diagnosis = jTextArea5.getText();
+        String observations = jTextArea6.getText();
+        String recommendedTreatment = jTextArea7.getText();
+        String followUp = jTextArea8.getText();
+        String hospitalizationReason = jTextArea9.getText();
+        String hospitalizationDate = date_entry_input.getText();
+        String hospitalizationObservations = jTextArea1.getText();
+
+        Response response;
+        if (hospitalizationReason != null && !hospitalizationReason.isBlank()
+                && hospitalizationDate != null && !hospitalizationDate.isBlank()) {
+            response = MedicalServiceController.hospitalizeFromAppointment(
+                    appointmentId,
+                    hospitalizationDate,
+                    hospitalizationReason,
+                    hospitalizationObservations
+            );
+        } else {
+            response = MedicalServiceController.completeAppointment(appointmentId, diagnosis,
+                    observations, recommendedTreatment, followUp);
+        }
+
+        if (response.getStatus() >= 500) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
+        } else if (response.getStatus() >= 400) {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.WARNING_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, response.getMessage(), "Response Message", JOptionPane.INFORMATION_MESSAGE);
+            jTextArea5.setText("");
+            jTextArea6.setText("");
+            jTextArea7.setText("");
+            jTextArea8.setText("");
+            jTextArea9.setText("");
+            jTextArea1.setText("");
+            date_entry_input.setText("");
+            estimated_duration_input.setText("");
+            loadAppointmentsComboBoxes();
+            loadAppointmentsTable(false);
+        }
     }//GEN-LAST:event_complete_buttonActionPerformed
 
     private void prescribe_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prescribe_buttonActionPerformed
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        if (model.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(null, "No medications to prescribe", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         boolean allOk = true;
         for (int i = 0; i < model.getRowCount(); i++) {
             String appointmentId = (String) model.getValueAt(i, 0);
             String medicationName = (String) model.getValueAt(i, 1);
-            double dose = Double.parseDouble((String) model.getValueAt(i, 2));
+            String dose = (String) model.getValueAt(i, 2);
             String route = (String) model.getValueAt(i, 3);
-            int duration = Integer.parseInt((String) model.getValueAt(i, 4));
+            String duration = (String) model.getValueAt(i, 4);
             String instructions = (String) model.getValueAt(i, 5);
-            int frecuency = Integer.parseInt((String) model.getValueAt(i, 6));
+            String frecuency = (String) model.getValueAt(i, 6);
 
             Response response = MedicalServiceController.prescribeMedication(
                     appointmentId, medicationName, dose, route, duration, instructions, frecuency);
@@ -1366,11 +1428,6 @@ public class Doctor_View extends javax.swing.JFrame {
         String duration = treatment_duration_label.getText();
         String instructions = additional_instructions_label.getText();
         String frecuency = frecuency_label.getText();
-
-        if (appointmentId == null || medicationName.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Please fill all fields", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
 
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.addRow(new Object[]{
@@ -1406,12 +1463,10 @@ public class Doctor_View extends javax.swing.JFrame {
     }//GEN-LAST:event_accept_button_reschedule_medicalActionPerformed
 
     private void new_time_appointment_labelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_new_time_appointment_labelActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_new_time_appointment_labelActionPerformed
 
     private void patient_id_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_patient_id_buttonActionPerformed
         String patientId = (String) select_patient_id.getSelectedItem();
-        if (patientId == null) return;
         Response response = MedicalServiceController.getPatientHospitalizations(patientId);
         if (response.getStatus() == Status.OK) {
             select_requests.removeAllItems();
@@ -1428,7 +1483,7 @@ public class Doctor_View extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton accept_button_reschedule_medical;
-    private javax.swing.JButton accept_label;
+    private javax.swing.JButton accept_medical_appointment_button;
     private javax.swing.JLabel accept_medical_label;
     private javax.swing.JButton add_button;
     private javax.swing.JTextField additional_instructions_label;
@@ -1511,7 +1566,7 @@ public class Doctor_View extends javax.swing.JFrame {
     private javax.swing.JRadioButton requests_button;
     private javax.swing.JLabel reschedule_label;
     private javax.swing.JButton save_button;
-    private javax.swing.JButton search_button;
+    private javax.swing.JButton search_patient_button;
     private javax.swing.JComboBox<String> select_appointment;
     private javax.swing.JComboBox<String> select_appointment_2;
     private javax.swing.JComboBox<String> select_appointment_complete_medical;

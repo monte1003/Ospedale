@@ -1,32 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.model;
 
-import packagee.ospedale.model.Doctor;
-import packagee.ospedale.model.Patient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 /**
- *
- * @author edangulo
+ * Representa una cita medica y el seguimiento realizado durante su atencion.
  */
 public class Appointment {
-    
+
     private final String id;
-    private Patient patient;
-    private Doctor doctor;
-    private Specialty specialty;
+    private final Patient patient;
+    private final Doctor doctor;
+    private final Specialty specialty;
     private LocalDateTime datetime;
     private String reason;
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
     private boolean type;
-    private ArrayList<Prescription> prescriptions;
+    private final ArrayList<Prescription> prescriptions;
     private AppointmentStatus status;
     private String diagnosis;
     private String observations;
@@ -94,15 +83,34 @@ public class Appointment {
     }
 
     public boolean addPrescription(Prescription prescrip) {
-        return this.prescriptions.add(prescrip);
+        return prescriptions.add(prescrip);
     }
-    
+
     public String getReason() { 
         return reason; 
     }
-    
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
     public void setDatetime(LocalDateTime datetime) {
-    this.datetime = datetime;
-}
-    
+        this.datetime = datetime;
+    }
+
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public String getRecommendedTreatment() {
+        return recommendedTreatment;
+    }
+
+    public String getFollowUp() {
+        return followUp;
+    }
 }

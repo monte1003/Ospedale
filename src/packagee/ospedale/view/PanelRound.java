@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.view;
 
 import java.awt.Color;
@@ -13,8 +9,7 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.JPanel;
 
 /**
- *
- * @author jjlora
+ * Panel reutilizable con bordes redondeados para la interfaz Swing.
  */
 public class PanelRound extends JPanel {
 
@@ -50,5 +45,6 @@ public class PanelRound extends JPanel {
     }
 
     public void setColor(Color color) {
+        setBackground(color);
     }
 }

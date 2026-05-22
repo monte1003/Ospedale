@@ -1,23 +1,17 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.model;
 
-import packagee.ospedale.model.Appointment;
-
 /**
- *
- * @author jjlora
+ * Representa una prescripcion asociada a una cita.
  */
 public class Prescription {
-    private Appointment appointment;
-    private String medicationName;
-    private double dose;
-    private String administrationRoute;
-    private int treatmentDuration;
-    private String additionalInstructions;
-    private int frecuency;
+
+    private final Appointment appointment;
+    private final String medicationName;
+    private final double dose;
+    private final String administrationRoute;
+    private final int treatmentDuration;
+    private final String additionalInstructions;
+    private final int frecuency;
 
     public Prescription(Appointment appointment, String medicationName, double dose, String administrationRoute, int treatmentDuration, String additionalInstructions, int frecuency) {
         this.appointment = appointment;
@@ -29,7 +23,4 @@ public class Prescription {
         this.additionalInstructions = additionalInstructions;
         this.frecuency = frecuency;
     }
-    
-    
-    
 }

@@ -10,21 +10,26 @@ import packagee.ospedale.controller.PatientController;
 import packagee.ospedale.controller.utils.Response;
 import packagee.ospedale.controller.utils.Status;
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import packagee.ospedale.model.Specialty;
+import packagee.ospedale.model.storage.Storage;
+import packagee.ospedale.observer.StorageEventType;
+import packagee.ospedale.observer.StorageObserver;
 
 /**
- *
- * @author jjlora
- * @author edangulo
+ * Vista del paciente para consultar datos personales y solicitar servicios.
  */
 public class Patient_View extends javax.swing.JFrame {
 
     private int x, y;
     private long patientId;
     private boolean fromAdmin;
+    private StorageObserver storageObserver;
 
     public Patient_View(long patientId, boolean fromAdmin) {
         initComponents();
@@ -38,6 +43,30 @@ public class Patient_View extends javax.swing.JFrame {
         loadDoctorsComboBox();
         loadAppointmentsComboBox();
         loadRoomTypesComboBox();
+        registerObserver();
+    }
+
+    // Escucha cambios en usuarios y citas para mantener la vista actualizada.
+    private void registerObserver() {
+        storageObserver = eventType -> SwingUtilities.invokeLater(() -> {
+            if (eventType == StorageEventType.USERS_CHANGED) {
+                loadPatientInfo();
+                loadDoctorsComboBox();
+            }
+
+            if (eventType == StorageEventType.APPOINTMENTS_CHANGED) {
+                loadAppointmentsTable();
+                loadAppointmentsComboBox();
+            }
+        });
+
+        Storage.getInstance().addObserver(storageObserver);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                Storage.getInstance().removeObserver(storageObserver);
+            }
+        });
     }
     
     private void loadPatientInfo() {
@@ -50,8 +79,11 @@ public class Patient_View extends javax.swing.JFrame {
             jTextField6.setText((String) data.get("email"));
             jTextField7.setText("" + data.get("phone"));
             jTextField8.setText((String) data.get("address"));
+            jTextField11.setText((String) data.get("username"));
+            jTextField9.setText((String) data.get("password"));
+            jTextField10.setText((String) data.get("password"));
             boolean gender = (boolean) data.get("gender");
-            jComboBox6.setSelectedItem(gender ? "Female" : "Male");
+            jComboBox6.setSelectedItem(gender ? "Male" : "Female");
         }
     }
     
@@ -68,6 +100,7 @@ public class Patient_View extends javax.swing.JFrame {
                     a.get("datetime"),
                     a.get("doctorName"),
                     a.get("specialty"),
+                    a.get("type"),
                     a.get("status")
                 });
             }
@@ -77,13 +110,13 @@ public class Patient_View extends javax.swing.JFrame {
     private void loadDoctorsComboBox() {
         Response response = DoctorController.getAllDoctors();
         if (response.getStatus() == Status.OK) {
-            jComboBox2.removeAllItems();
-            jComboBox5.removeAllItems();
+            select_attending_doctor.removeAllItems();
+            select_sepecialty_or_doctor.removeAllItems();
             ArrayList<java.util.HashMap<String, Object>> doctors =
                 (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("doctors");
             for (java.util.HashMap<String, Object> d : doctors) {
-                jComboBox2.addItem("" + d.get("id"));
-                jComboBox5.addItem("" + d.get("id"));
+                select_attending_doctor.addItem("" + d.get("id"));
+                select_sepecialty_or_doctor.addItem("" + d.get("id"));
             }
         }
     }
@@ -91,19 +124,19 @@ public class Patient_View extends javax.swing.JFrame {
     private void loadAppointmentsComboBox() {
         Response response = MedicalServiceController.getPatientAppointments("" + patientId);
         if (response.getStatus() == Status.OK) {
-            jComboBox4.removeAllItems();
+            select_id_appointment.removeAllItems();
             ArrayList<java.util.HashMap<String, Object>> appointments =
                 (ArrayList<java.util.HashMap<String, Object>>) response.getData().get("appointments");
             for (java.util.HashMap<String, Object> a : appointments) {
-                jComboBox4.addItem((String) a.get("id"));
+                select_id_appointment.addItem((String) a.get("id"));
             }
         }
     }
     
     private void loadRoomTypesComboBox() {
-        jComboBox3.removeAllItems();
+        select_desired_room_type.removeAllItems();
         for (packagee.ospedale.model.RoomType rt : packagee.ospedale.model.RoomType.values()) {
-            jComboBox3.addItem(rt.name());
+            select_desired_room_type.addItem(rt.name());
         }
     }
 
@@ -160,17 +193,17 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        select_appointment_type = new javax.swing.JComboBox<>();
         createRequestMedicalAppointment = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        select_attending_doctor = new javax.swing.JComboBox<>();
         jTextField16 = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
+        select_desired_room_type = new javax.swing.JComboBox<>();
         jLabel23 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -185,8 +218,8 @@ public class Patient_View extends javax.swing.JFrame {
         jTextArea3 = new javax.swing.JTextArea();
         jScrollPane5 = new javax.swing.JScrollPane();
         jTextArea4 = new javax.swing.JTextArea();
-        jComboBox4 = new javax.swing.JComboBox<>();
-        jComboBox5 = new javax.swing.JComboBox<>();
+        select_id_appointment = new javax.swing.JComboBox<>();
+        select_sepecialty_or_doctor = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
@@ -525,8 +558,8 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel17.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jLabel17.setText("Appointment reason");
 
-        jComboBox1.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "Remote", "In-person" }));
+        select_appointment_type.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        select_appointment_type.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one", "Remote", "In-person" }));
 
         createRequestMedicalAppointment.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         createRequestMedicalAppointment.setText("Create");
@@ -550,8 +583,8 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel20.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel20.setText("Attending doctor");
 
-        jComboBox2.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
+        select_attending_doctor.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        select_attending_doctor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
 
         jTextField16.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
 
@@ -564,8 +597,8 @@ public class Patient_View extends javax.swing.JFrame {
         jLabel22.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel22.setText("Desired room type");
 
-        jComboBox3.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
+        select_desired_room_type.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        select_desired_room_type.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
 
         jLabel23.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
         jLabel23.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -616,11 +649,11 @@ public class Patient_View extends javax.swing.JFrame {
         jTextArea4.setRows(5);
         jScrollPane5.setViewportView(jTextArea4);
 
-        jComboBox4.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox4.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
+        select_id_appointment.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        select_id_appointment.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
 
-        jComboBox5.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
-        jComboBox5.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
+        select_sepecialty_or_doctor.setFont(new java.awt.Font("Yu Gothic UI", 0, 18)); // NOI18N
+        select_sepecialty_or_doctor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select one" }));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -644,7 +677,7 @@ public class Patient_View extends javax.swing.JFrame {
                                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                         .addComponent(jLabel15)
                                         .addComponent(jLabel14)
-                                        .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(select_sepecialty_or_doctor, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGroup(jPanel2Layout.createSequentialGroup()
                                     .addGap(63, 63, 63)
                                     .addComponent(jTextField13, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -656,7 +689,7 @@ public class Patient_View extends javax.swing.JFrame {
                                     .addComponent(jLabel16))
                                 .addGroup(jPanel2Layout.createSequentialGroup()
                                     .addGap(55, 55, 55)
-                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(select_appointment_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addGroup(jPanel2Layout.createSequentialGroup()
                             .addGap(42, 42, 42)
                             .addComponent(jLabel13)))
@@ -689,13 +722,13 @@ public class Patient_View extends javax.swing.JFrame {
                                 .addComponent(jLabel22, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 246, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(190, 190, 190)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(select_attending_doctor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(200, 200, 200)
                         .addComponent(jTextField16, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(191, 191, 191)
-                        .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(select_desired_room_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 126, Short.MAX_VALUE)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(63, 63, 63)
@@ -712,7 +745,7 @@ public class Patient_View extends javax.swing.JFrame {
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(47, 47, 47)
                                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(select_id_appointment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel25)))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(60, 60, 60)
@@ -736,7 +769,7 @@ public class Patient_View extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel20)
                         .addGap(18, 18, 18)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(select_attending_doctor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel21)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -744,7 +777,7 @@ public class Patient_View extends javax.swing.JFrame {
                         .addGap(24, 24, 24)
                         .addComponent(jLabel22)
                         .addGap(18, 18, 18)
-                        .addComponent(jComboBox3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(select_desired_room_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jLabel23)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -761,7 +794,7 @@ public class Patient_View extends javax.swing.JFrame {
                                     .addComponent(selectSpecialty)
                                     .addComponent(selectDoctor))
                                 .addGap(18, 18, 18)
-                                .addComponent(jComboBox5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(select_sepecialty_or_doctor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(jLabel14)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -779,7 +812,7 @@ public class Patient_View extends javax.swing.JFrame {
                                 .addGap(39, 39, 39)
                                 .addComponent(jLabel25)
                                 .addGap(18, 18, 18)
-                                .addComponent(jComboBox4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(select_id_appointment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel26)
                                 .addGap(18, 18, 18)
@@ -789,7 +822,7 @@ public class Patient_View extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jLabel16)
                         .addGap(18, 18, 18)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(select_appointment_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(40, 40, 40)
                         .addComponent(createRequestMedicalAppointment)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
@@ -841,11 +874,7 @@ public class Patient_View extends javax.swing.JFrame {
     }//GEN-LAST:event_exit_buttonActionPerformed
 
     private void cancelAppointment_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelAppointment_buttonActionPerformed
-        String appointmentId = (String) jComboBox4.getSelectedItem();
-        if (appointmentId == null) {
-            JOptionPane.showMessageDialog(null, "Please select an appointment", "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        String appointmentId = (String) select_id_appointment.getSelectedItem();
         Response response = MedicalServiceController.cancelAppointment(appointmentId);
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -886,23 +915,23 @@ public class Patient_View extends javax.swing.JFrame {
 
     private void logout_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logout_buttonActionPerformed
         Login login = new Login();
-        this.setVisible(false);
         login.setVisible(true);
+        dispose();
     }//GEN-LAST:event_logout_buttonActionPerformed
 
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         Admin_View admin = new Admin_View();
-        this.setVisible(false);
         admin.setVisible(true);
+        dispose();
     }//GEN-LAST:event_backButtonActionPerformed
 
     private void selectSpecialtyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSpecialtyActionPerformed
         if (selectDoctor.isSelected()) {
             selectDoctor.setSelected(false);
         }
-        jComboBox5.removeAllItems();
+        select_sepecialty_or_doctor.removeAllItems();
         for (Specialty spec : Specialty.values()) {
-            jComboBox5.addItem(spec.name());
+            select_sepecialty_or_doctor.addItem(spec.name());
         }
     }//GEN-LAST:event_selectSpecialtyActionPerformed
 
@@ -917,7 +946,7 @@ public class Patient_View extends javax.swing.JFrame {
         String date = jTextField12.getText();
         String time = jTextField13.getText();
         String reason = jTextArea4.getText();
-        String doctorOrSpecialty = (String) jComboBox5.getSelectedItem();
+        String doctorOrSpecialty = (String) select_sepecialty_or_doctor.getSelectedItem();
 
         String doctorId = "";
         String specialty = "";
@@ -928,8 +957,10 @@ public class Patient_View extends javax.swing.JFrame {
             specialty = doctorOrSpecialty;
         }
 
+        String appointmentType = (String) select_appointment_type.getSelectedItem();
+
         Response response = MedicalServiceController.requestAppointment(
-                "" + patientId, doctorId, specialty, date, time, reason);
+                "" + patientId, doctorId, specialty, date, time, reason, appointmentType);
 
         if (response.getStatus() >= 500) {
             JOptionPane.showMessageDialog(null, response.getMessage(), "Error " + response.getStatus(), JOptionPane.ERROR_MESSAGE);
@@ -954,9 +985,9 @@ public class Patient_View extends javax.swing.JFrame {
 
     private void createRequestHospitalizationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRequestHospitalizationActionPerformed
         String reason = jTextArea3.getText();
-        String doctorId = (String) jComboBox2.getSelectedItem();
+        String doctorId = (String) select_attending_doctor.getSelectedItem();
         String date = jTextField16.getText();
-        String roomType = (String) jComboBox3.getSelectedItem();
+        String roomType = (String) select_desired_room_type.getSelectedItem();
         String observations = jTextArea1.getText();
 
         Response response = MedicalServiceController.requestHospitalization(
@@ -971,7 +1002,7 @@ public class Patient_View extends javax.swing.JFrame {
             jTextArea3.setText("");
             jTextField16.setText("");
             jTextArea1.setText("");
-            jComboBox3.setSelectedIndex(0);
+            select_desired_room_type.setSelectedIndex(0);
         }
     }//GEN-LAST:event_createRequestHospitalizationActionPerformed
 
@@ -983,11 +1014,6 @@ public class Patient_View extends javax.swing.JFrame {
     private javax.swing.JButton createRequestHospitalization;
     private javax.swing.JButton createRequestMedicalAppointment;
     private javax.swing.JButton exit_button;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private javax.swing.JComboBox<String> jComboBox4;
-    private javax.swing.JComboBox<String> jComboBox5;
     private javax.swing.JComboBox<String> jComboBox6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1048,6 +1074,11 @@ public class Patient_View extends javax.swing.JFrame {
     private javax.swing.JButton saveModifyInfoPatient;
     private javax.swing.JRadioButton selectDoctor;
     private javax.swing.JRadioButton selectSpecialty;
+    private javax.swing.JComboBox<String> select_appointment_type;
+    private javax.swing.JComboBox<String> select_attending_doctor;
+    private javax.swing.JComboBox<String> select_desired_room_type;
+    private javax.swing.JComboBox<String> select_id_appointment;
+    private javax.swing.JComboBox<String> select_sepecialty_or_doctor;
     private javax.swing.JTable table_patient_view;
     // End of variables declaration//GEN-END:variables
 }

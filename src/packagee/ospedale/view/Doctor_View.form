@@ -276,7 +276,7 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="search_button" min="-2" max="-2" attributes="0"/>
+                          <Component id="search_patient_button" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="601" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -292,7 +292,7 @@
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="table_option2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="44" max="-2" attributes="0"/>
-                          <Component id="search_button" min="-2" max="-2" attributes="0"/>
+                          <Component id="search_patient_button" min="-2" max="-2" attributes="0"/>
                           <EmptySpace pref="67" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -345,7 +345,7 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="javax.swing.JButton" name="search_button">
+                <Component class="javax.swing.JButton" name="search_patient_button">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                       <Font name="Yu Gothic UI" size="18" style="0"/>
@@ -353,7 +353,7 @@
                     <Property name="text" type="java.lang.String" value="Search"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="search_buttonActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="search_patient_buttonActionPerformed"/>
                   </Events>
                 </Component>
               </SubComponents>
@@ -638,7 +638,7 @@
                                           <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
                                               <Group type="102" alignment="1" attributes="0">
-                                                  <Component id="accept_label" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="accept_medical_appointment_button" min="-2" max="-2" attributes="0"/>
                                                   <EmptySpace min="-2" pref="87" max="-2" attributes="0"/>
                                               </Group>
                                               <Group type="102" alignment="1" attributes="0">
@@ -875,7 +875,7 @@
                                           <EmptySpace type="separate" max="-2" attributes="0"/>
                                           <Component id="select_appointment" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
-                                          <Component id="accept_label" min="-2" max="-2" attributes="0"/>
+                                          <Component id="accept_medical_appointment_button" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
@@ -978,7 +978,7 @@
                     <Property name="orientation" type="int" value="1"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JButton" name="accept_label">
+                <Component class="javax.swing.JButton" name="accept_medical_appointment_button">
                   <Properties>
                     <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                       <Font name="Yu Gothic UI" size="18" style="0"/>
@@ -986,7 +986,7 @@
                     <Property name="text" type="java.lang.String" value="Accept"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="accept_labelActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="accept_medical_appointment_buttonActionPerformed"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="reschedule_label">

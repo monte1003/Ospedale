@@ -1,26 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.model;
 
-import packagee.ospedale.model.User;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- *
- * @author edangulo
+ * Modela al paciente y su informacion clinica basica.
  */
 public class Patient extends User {
-    
+
     private String email;
     private LocalDate birthdate;
     private boolean gender;
     private long phone;
     private String address;
-    private ArrayList<Appointment> appointments;
-    private Hospitalization hospitalization;
+    private final ArrayList<Appointment> appointments;
+    private final ArrayList<Hospitalization> hospitalizations;
 
     public void setEmail(String email) {
         this.email = email;
@@ -42,12 +36,16 @@ public class Patient extends User {
         this.address = address;
     }
 
-    public void setHospitalization(Hospitalization hospitalization) {
-        this.hospitalization = hospitalization;
+    public void addHospitalization(Hospitalization hospitalization) {
+        this.hospitalizations.add(hospitalization);
     }
 
     public ArrayList<Appointment> getAppointments() {
-        return appointments;
+        return new ArrayList<>(appointments);
+    }
+
+    public ArrayList<Hospitalization> getHospitalizations() {
+        return new ArrayList<>(hospitalizations);
     }
     
     public void addAppointment(Appointment a) {
@@ -82,6 +80,6 @@ public class Patient extends User {
         this.phone = phone;
         this.address = address;
         this.appointments = new ArrayList<>();
+        this.hospitalizations = new ArrayList<>();
     }
-    
 }
