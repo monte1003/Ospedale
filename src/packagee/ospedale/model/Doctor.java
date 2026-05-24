@@ -1,27 +1,21 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.model;
 
-import packagee.ospedale.model.User;
 import java.util.ArrayList;
-import packagee.ospedale.model.Appointment;
 
 /**
- *
- * @author edangulo
+ * Modela al doctor y sus relaciones con citas y hospitalizaciones.
  */
 public class Doctor extends User {
-    
+
     private Specialty specialty;
     private String licenceNumber;
     private String assignedOffice;
-    private ArrayList<Appointment> appointments;
-    private ArrayList<Hospitalization> hospitalizations;
+    private final ArrayList<Appointment> appointments;
+    private final ArrayList<Hospitalization> hospitalizations;
 
     public Doctor(long id, String username, String firstname, String lastname, String password, Specialty specialty, String licenceNumber, String assignedOffice) {
         super(id, username, firstname, lastname, password);
+        appointments = new ArrayList<>();
         hospitalizations = new ArrayList<>();
         this.specialty = specialty;
         this.licenceNumber = licenceNumber;
@@ -29,14 +23,18 @@ public class Doctor extends User {
     }
 
     public ArrayList<Appointment> getAppointments() {
-        return appointments;
+        return new ArrayList<>(appointments);
+    }
+
+    public boolean addAppointment(Appointment appointment) {
+        return appointments.add(appointment);
     }
 
     public Specialty getSpecialty() {
         return specialty;
     }
-    
-    public boolean addHospitalization(Hospitalization hosp){
+
+    public boolean addHospitalization(Hospitalization hosp) {
         return hospitalizations.add(hosp);
     }
 
@@ -59,5 +57,4 @@ public class Doctor extends User {
     public String getAssignedOffice() { 
         return assignedOffice; 
     }
-    
 }

@@ -1,29 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package packagee.ospedale.model;
 
-import packagee.ospedale.model.Doctor;
-import packagee.ospedale.model.Patient;
 import java.time.LocalDate;
 
 /**
- *
- * @author edangulo
+ * Representa una solicitud o proceso de hospitalizacion de un paciente.
  */
 public class Hospitalization {
-    
-    private final String id;
-    private Patient patient;
-    private Doctor doctor;
-    private LocalDate date;
 
-    public String getId() {
-        return id;
-    }
+    private final String id;
+    private final Patient patient;
+    private final Doctor doctor;
+    private final LocalDate date;
     private String reason;
-    private RoomType roomType;
+    private final RoomType roomType;
     private String observations;
     private HospitalizationStatus status;
 
@@ -34,7 +23,7 @@ public class Hospitalization {
     public Hospitalization(String id, Patient patient, Doctor doctor, LocalDate date, String reason, RoomType roomType, String observations) {
         this.id = id;
         this.patient = patient;
-        patient.setHospitalization(this);
+        patient.addHospitalization(this);
         this.doctor = doctor;
         doctor.addHospitalization(this);
         this.date = date;
@@ -43,10 +32,11 @@ public class Hospitalization {
         this.observations = observations;
         this.status = HospitalizationStatus.REQUESTED;
     }
+
     public Hospitalization(String id, Patient patient, Doctor doctor, LocalDate date, String reason, RoomType roomType, String observations, HospitalizationStatus hopsS) {
         this.id = id;
         this.patient = patient;
-        patient.setHospitalization(this);
+        patient.addHospitalization(this);
         this.doctor = doctor;
         doctor.addHospitalization(this);
         this.date = date;
@@ -55,7 +45,11 @@ public class Hospitalization {
         this.observations = observations;
         this.status = hopsS;
     }
-    
+
+    public String getId() {
+        return id;
+    }
+
     public Patient getPatient() { 
         return patient; 
     }
@@ -79,5 +73,8 @@ public class Hospitalization {
     public HospitalizationStatus getStatus() { 
         return status; 
     }
-    
+
+    public String getObservations() {
+        return observations;
+    }
 }
