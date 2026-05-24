@@ -5,9 +5,9 @@
 package packagee.ospedale.observer;
 
 /**
- *
- * @author juand
+ * Permite reaccionar a cambios relevantes del almacenamiento compartido.
  */
-public class StorageObserver {
-    
+public interface StorageObserver {
+
+    void onStorageChanged(StorageEventType eventType);
 }

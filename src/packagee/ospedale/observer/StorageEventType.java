@@ -6,8 +6,9 @@ package packagee.ospedale.observer;
 
 /**
  *
- * @author juand
  */
-public class StorageEventType {
-    
+public enum StorageEventType {
+    USERS_CHANGED,
+    APPOINTMENTS_CHANGED,
+    HOSPITALIZATIONS_CHANGED
 }
