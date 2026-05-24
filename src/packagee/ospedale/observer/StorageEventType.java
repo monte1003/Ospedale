@@ -1,7 +1,11 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package packagee.ospedale.observer;
 
 /**
- * Enumera los cambios que pueden interesar a las vistas.
+ *
  */
 public enum StorageEventType {
     USERS_CHANGED,
